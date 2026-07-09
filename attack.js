@@ -64,7 +64,10 @@ const adrenalineBonus = player.status.adrenalineAtk || 0;
 
     if (card.type === "curse") {
         player.hp -= card.value;
-        if (player.hp < 1) gameover();
+        if (player.hp <= 0) {
+	    alert(`Game Over`);
+	    gameover();
+	}
     }
 
 

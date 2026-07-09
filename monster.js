@@ -24,7 +24,7 @@ const enemyTypes = {
     bee:      { name:"Bee",       icon:"🐝", hpRate:0.50, atkRate:1.25, blockRate:0.25, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     undoll:   { name:"Undoll",    icon:"🪆", hpRate:0.80, atkRate:0.75, blockRate:0.50, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     assassin: { name:"Assassin",  icon:"🥷", hpRate:0.75, atkRate:1.90, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
-
+    greedy:   { name:"Greedy",    icon:"🦹", hpRate:0.75, atkRate:1.00, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
 
 
 
@@ -45,7 +45,7 @@ const enemyTypes = {
 function initEnemyStatus() {
 
     //const pool = ["robot"]
-    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin"];
+    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy"];
 
 // ─── 敵の種類の選定 ───
 

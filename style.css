@@ -893,7 +893,7 @@ button:hover:not(:disabled){
     pointer-events: auto;
     
     /* アニメーションの適用 */
-    animation: slideInDown 0.3s ease-out forwards, fadeOut 0.4s ease-in 2.6s forwards;
+    animation: slideInDown 0.3s ease-out forwards, fadeOut 0.4s ease-in 10s forwards;
 }
 
 /* 上からスライドイン */

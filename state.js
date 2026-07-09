@@ -76,10 +76,10 @@ window.alert = function(message) {
 
     container.appendChild(alertDiv);
 
-    // アニメーション時間（合計10秒）が経過したら自動削除
+    // アニメーション時間（合計30秒）が経過したら自動削除
     setTimeout(() => {
         alertDiv.remove();
-    }, 10000);
+    }, 30000);
 };
 
 
@@ -506,6 +506,20 @@ function switchMenuTab(tabName) {
                     偶数ターンのときに攻撃を行う。奇数ターンは攻撃しない。攻撃力は他の敵と比べ比較的高い。
                 </div>
             </div>
+
+<div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>Greedy 🦹</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <strong style="color: #00adb5;">【カード略奪】</strong>
+                        <span style="color: gold;">150G</span>
+                    </div>
+                </div>
+                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    毎ターン、10%の確率でデッキの中からランダムに1枚奪われる。Greedyを倒しても奪われたカードは戻ってこない。
+                </div>
+            </div>
+
 
 
 

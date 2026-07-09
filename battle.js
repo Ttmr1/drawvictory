@@ -549,6 +549,42 @@ function endTurn(){
         player.status.immaturity = (player.status.immaturity || 0) + 1;
     }
 
+        //グリーディ10%でデッキからランダムにカードを奪う
+if (enemy.data && enemy.data.name === "Greedy") {
+    if (Math.random() < 0.1) {
+
+        const currentDeck = savedDecks[currentSlot];
+
+        // デッキに存在するカードIDだけ取得
+        const cardIds = Object.keys(currentDeck).filter(id => currentDeck[id] > 0);
+
+        if (cardIds.length > 0) {
+
+            // ランダムなカードIDを選択
+            const randomId = cardIds[Math.floor(Math.random() * cardIds.length)];
+
+            // カード情報取得
+            const stolenCard = allCardsMaster.find(c => c.id == randomId);
+
+            // 1枚減らす
+            currentDeck[randomId]--;
+
+            // 0枚になったら削除
+            if (currentDeck[randomId] <= 0) {
+                delete currentDeck[randomId];
+            }
+            // セーブ
+            localStorage.setItem(
+                "mini_spire_saved_decks",
+                JSON.stringify(savedDecks)
+            );
+
+            alert(`Greedyに\n「${stolenCard.name}\n${stolenCard.desc}」\nを奪われた！`);
+        }
+    }
+}
+
+
     // 魔女
     if (enemy.data && enemy.data.name === "Witch" && enemy.hp > 0) {
         if (Math.random() < (1 / 2)) {
@@ -808,6 +844,7 @@ function endTurn(){
     if ((player.fields.def_up || 0) > 0 && player.block === 0) {
         player.block = player.fields.def_up * 2;
     }
+
 
     window.battleTurnCount++;
     applyEnemyTurnStartTraits();
