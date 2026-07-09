@@ -56,6 +56,34 @@ window.builderCategories = [
     { key: "oth", name: "🃏 その他特殊カード", limit: 99 }
 ];
 
+// 標準のalertを独自カスタムアラートに置き換える
+window.alert = function(message) {
+    const container = document.getElementById("customAlertContainer");
+    if (!container) {
+        console.warn("customAlertContainer が見つかりません: ", message);
+        return;
+    }
+
+    // アラート要素の作成
+    const alertDiv = document.createElement("div");
+    alertDiv.className = "custom-alert";
+    alertDiv.innerText = message;
+
+    // クリックされたらすぐ消せるようにする
+    alertDiv.onclick = function() {
+        alertDiv.remove();
+    };
+
+    container.appendChild(alertDiv);
+
+    // アニメーション時間（合計10秒）が経過したら自動削除
+    setTimeout(() => {
+        alertDiv.remove();
+    }, 10000);
+};
+
+
+
 function restartGame() {
     floor = 1;
     player.maxHp = 70; 
