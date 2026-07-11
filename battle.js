@@ -134,6 +134,12 @@ function startBattle(){
     enemy.attack = enemyStatus.attack;
     enemy.block = enemyStatus.block;
     enemy.status = enemyStatus.status;
+
+
+// 👽 Traitの特性をここで決める
+if (enemy.data.name === "Trait") {
+    generateTraitTraits();
+}
     
     window.phoenixReviveChance = 1;
     window.beastDamagedThisTurn = false;
@@ -171,6 +177,10 @@ function startBattle(){
 
     discardPile.push(...hand);
     hand = [];
+console.log(enemy.status);
+console.log(enemy.status.traits);
+
+
 
     if (enemy.data && enemy.data.name === "Undoll") {
         const slot = window.currentSlot || 0;
@@ -380,6 +390,56 @@ function endTurn(){
     if (surplusEnergy > 0) {
         for (let i = 0; i < surplusEnergy; i++) { if (Math.random() < 0.5) extraDrawCount++; }
     }
+
+
+
+
+
+
+//トレイト
+if(enemy.data.name==="Trait"){
+
+    enemy.status.traits.forEach(trait=>{
+
+        switch(trait){
+
+            case "atkUp":
+                enemy.attack= enemy.attack*1.1;
+                break;
+
+            case "heal":
+                enemy.hp=Math.min(enemy.maxHp,enemy.hp+5);
+                break;
+
+            case "leak":
+                player.status.leak=2;
+                alert("漏電を受けた！");
+                break;
+
+            case "amnesia":
+                player.status.amnesia=2;
+                alert("忘却を受けた！");
+                break;
+
+            case "immaturity":
+                player.status.immaturity=2;
+                alert("未熟を受けた！");
+                break;
+
+            case "fixedDamage":
+                const dmg=Math.ceil(player.maxHp*0.02);
+                player.hp=Math.max(0,player.hp-dmg);
+                alert(`固定ダメージ ${dmg}`);
+                break;
+        }
+
+    });
+
+}
+
+
+
+
 
     if (player.status && player.status.leak > 0) {
         if (surplusEnergy > 0) {
@@ -957,6 +1017,63 @@ function victory(){
     });
 }
 
+
+
+function generateTraitTraits() {
+
+    const firstPool = [
+        "immuneNormal",
+        "immuneStatus",
+        "atkUp",
+        "heal",
+        "leak",
+        "amnesia",
+        "immaturity",
+        "fixedDamage"
+    ];
+
+    const secondPool = [
+        "atkUp",
+        "heal",
+        "leak",
+        "amnesia",
+        "immaturity",
+        "fixedDamage"
+    ];
+
+    enemy.status.traits = [];
+    enemy.status.immuneNormal = false;
+    enemy.status.immuneStatus = false;
+
+    // 1個目
+    const first = firstPool[Math.floor(Math.random()*firstPool.length)];
+
+    enemy.status.traits.push(first);
+
+    if(first==="immuneNormal"){
+        enemy.status.immuneNormal=true;
+        return;
+    }
+
+    if(first==="immuneStatus"){
+        enemy.status.immuneStatus=true;
+        return;
+    }
+
+    // 2個目
+    const remain = secondPool.filter(x=>x!==first);
+
+    enemy.status.traits.push(
+        remain[Math.floor(Math.random()*remain.length)]
+    );
+}
+
+
+
+
+
+
+
 function takeReward(card){
     deck.push(copyCard(card));
     const currentDeck = savedDecks[currentSlot];
@@ -1122,22 +1239,38 @@ window.addEventListener("keydown", function(event) {
     }
 });
 
-function gameover(){
-    if (enemy.data && enemy.data.name === "Reaper") {
-         removeReaperCursesFromSavedDecks();
-    }
-    alert("Game Over");
-    resetDeckBattle();
-    
-    //グローバルで宣言されていない変数操作によるエラー防止
-const endTurnBtn = document.getElementById("endTurnBtn");
-if(endTurnBtn) endTurnBtn.disabled = false; // ← 要素があるときだけ実行
+function gameover() {
 
-const startScreen = document.getElementById("startScreen");
-if(startScreen) startScreen.style.display = "flex"; // ← 要素があるときだけ実行
-    location.reload();
-    return;
+    if (enemy.data && enemy.data.name === "Reaper") {
+        removeReaperCursesFromSavedDecks();
+    }
+
+    resetDeckBattle();
+
+    inBattle = false;
+
+    const endTurnBtn = document.getElementById("endTurnBtn");
+    if (endTurnBtn) endTurnBtn.disabled = false;
+
+    // モーダルへ情報を表示
+    document.getElementById("gameOverFloor").innerText = floor;
+    document.getElementById("gameOverGold").innerText = player.gold;
+
+    // ゲームオーバーモーダル表示
+    document.getElementById("gameOverModal").style.display = "flex";
 }
+
+function returnToTitle() {
+
+    document.getElementById("gameOverModal").style.display = "none";
+
+    document.getElementById("game").style.display = "none";
+    document.getElementById("startScreen").style.display = "flex";
+
+    // 必要ならここで初期化
+    location.reload();
+}
+
 
 function saveSlotData(slotNumber = 1) {
     const saveData = {

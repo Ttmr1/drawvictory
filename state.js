@@ -43,7 +43,11 @@ window.player = {
     fields: { atk_up: 0, def_up: 0, draw_up: 0, heavy_burn:0,boss_scout:0 } 
 };
 
-window.enemy = { hp: 40, maxHp: 40, attack: 6, block: 0, data: null, status: { poisonList: [], burn: 0, freeze: 0, stun: 0,camouflageTurns: 0 } };
+window.enemy = { hp: 40, maxHp: 40, attack: 6, block: 0, data: null, status: { poisonList: [], burn: 0, freeze: 0, stun: 0,camouflageTurns: 0 ,
+	        // 👽 Trait専用
+        	traits: [],physicalImmune: false,statusImmune: false
+		} };
+
 window.floor = 1;
 window.inBattle = false;
 
@@ -512,7 +516,7 @@ function switchMenuTab(tabName) {
                     <span>Greedy 🦹</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <strong style="color: #00adb5;">【カード略奪】</strong>
-                        <span style="color: gold;">150G</span>
+                        <span style="color: gold;">175G</span>
                     </div>
                 </div>
                 <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
@@ -520,7 +524,18 @@ function switchMenuTab(tabName) {
                 </div>
             </div>
 
-
+<div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>Trait 👽</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <strong style="color: #00adb5;">【ランダム特徴】</strong>
+                        <span style="color: gold;">200G</span>
+                    </div>
+                </div>
+                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    戦闘開始時に以下の特性の中からランダムに2つ選ばれる。物理無効化、状態異常無効化、毎ターン攻撃力増加、毎ターン回復、漏電付与、忘却を付与、未熟を付与。なお、物理無効化または状態異常無効化が選ばれたとき、特性をこの1つのみとする。 
+                </div>
+            </div>
 
 
 

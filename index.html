@@ -330,6 +330,34 @@
     </div>
 </div>
 
+
+<div id="gameOverModal" class="gameover-modal">
+
+    <div class="gameover-content">
+
+        <h1 class="gameover-title">You Dead</h1>
+
+        <p>到達階層：<span id="gameOverFloor">1</span>F</p>
+
+        <p>所持金：<span id="gameOverGold">0</span>G</p>
+
+        <div style="margin-top:25px;">
+            <button onclick="showMapDeckManager()">
+                📖 デッキ一覧
+            </button>
+
+            <button onclick="returnToTitle()">
+                🏠 スタート画面
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+<p id="enemyTrait"></p>
+
+
 <div id="customAlertContainer" style="
     position: fixed;
     top: 20px;

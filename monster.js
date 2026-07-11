@@ -25,7 +25,7 @@ const enemyTypes = {
     undoll:   { name:"Undoll",    icon:"🪆", hpRate:0.80, atkRate:0.75, blockRate:0.50, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     assassin: { name:"Assassin",  icon:"🥷", hpRate:0.75, atkRate:1.90, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     greedy:   { name:"Greedy",    icon:"🦹", hpRate:0.75, atkRate:1.00, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
-
+    trait:    { name:"Trait",     icon:"👽", hpRate:0.80, atkRate:0.80, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
 
 
 //ボス
@@ -45,7 +45,7 @@ const enemyTypes = {
 function initEnemyStatus() {
 
     //const pool = ["robot"]
-    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy"];
+    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait"];
 
 // ─── 敵の種類の選定 ───
 

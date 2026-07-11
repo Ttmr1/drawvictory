@@ -820,6 +820,43 @@ function handleSimplePromptDeletion() {
 // =========================================================================
 function updateUI(){
 
+if (enemy.data.name === "Trait") {
+    let traitText = [];
+
+    enemy.status.traits.forEach(trait => {
+        switch (trait) {
+            case "immuneNormal":
+                traitText.push("🛡️物理無効");
+                break;
+            case "immuneStatus":
+                traitText.push("☠️状態異常無効");
+                break;
+            case "atkUp":
+                traitText.push("⚔️攻撃力増加");
+                break;
+            case "heal":
+                traitText.push("💚毎ターン回復");
+                break;
+            case "leak":
+                traitText.push("⚡漏電付与");
+                break;
+            case "amnesia":
+                traitText.push("🧠忘却付与");
+                break;
+            case "immaturity":
+                traitText.push("👶未熟付与");
+                break;
+            case "fixedDamage":
+                traitText.push("💥固定ダメージ");
+                break;
+        }
+    });
+
+    document.getElementById("enemyTrait").innerHTML =
+        "特性：" + traitText.join(" / ");
+}
+
+
 const pHpText = document.getElementById("playerHpText");
     if(pHpText) {
         // 現在の最大HPからパーセンテージを計算
@@ -917,6 +954,25 @@ if (isOrcBerserk) {
 
 
     if(enemy.data){
+
+	if (enemy.data && enemy.data.name === "Trait" && Array.isArray(enemy.status.traits)) {
+
+    	    const traitNames = {
+        	immuneNormal: "🛡️物理無効",
+        	immuneStatus: "☠️状態異常無効",
+        	atkUp: "⚔️攻撃力増加",
+        	heal: "💚毎ターン回復",
+	        leak: "⚡漏電付与",
+        	amnesia: "❓忘却付与",
+        	immaturity: "🔰未熟付与",
+       	 	fixedDamage: "💥固定ダメージ"
+    	    };
+   	 statusText += `${enemy.status.traits
+        	.map(trait => traitNames[trait] || trait)
+        	.join(" / ")}<br>`;
+	}
+
+
         if(enemy.data.immuneNormal){
             statusText += `🛡️物理無効<br>`;
         }

@@ -823,7 +823,7 @@ function showMapDeckManager() {
             skipBtn.style.background = "#4caf50"; // 緑色などにして目立たせる
             skipBtn.style.color = "white";
         } else {
-            skipBtn.innerText = "マップに戻る";
+            skipBtn.innerText = "戻る";
             skipBtn.style.background = ""; 
             skipBtn.style.color = "";
         }
@@ -931,7 +931,7 @@ div.onclick = function() {
                     const currentSlot = window.currentSlot || 0;
                     const currentDeck = savedDecks[currentSlot];
 
-                    // 1. まず50ゴールド持っているかチェック
+                    // 1. まず25ゴールド持っているかチェック
                     if ((player.gold || 0) < 25) {
                         alert("ゴールドが足りないため、これ以上カードを削除できません！");
                         return;
