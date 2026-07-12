@@ -71,7 +71,7 @@ function initEnemyStatus() {
     }
 
     
-    const baseHp  = 20 + floor * 7.53; 
+    const baseHp  = 20 + floor * 7.31; 
     const baseAtk =  3 + floor * 1.21;  
     
     let diffRateHp  = 1.0;

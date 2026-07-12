@@ -8,29 +8,29 @@ const allCardsMaster = [
 { id: 102, name: "6ダメージ", cost: 1, desc: "", type: "attack", value: 6, rarity: "common", cat: "atk", isInitial: true },
 { id: 103, name: "9ダメージ", cost: 2, desc: "", type: "attack", value: 9, rarity: "common", cat: "atk", isInitial: true },
 
-{ id: 1101, name: "5ダメージ", cost: 0, desc: "", type: "attack", value: 5, rarity: "uncommon", cat: "atk", isInitial: false },
-{ id: 1102, name: "8ダメージ", cost: 1, desc: "", type: "attack", value: 8, rarity: "uncommon", cat: "atk", isInitial: false },
+{ id: 1101, name: "4ダメージ", cost: 0, desc: "", type: "attack", value: 4, rarity: "uncommon", cat: "atk", isInitial: false },
+{ id: 1102, name: "7ダメージ", cost: 1, desc: "", type: "attack", value: 7, rarity: "uncommon", cat: "atk", isInitial: false },
 { id: 1103, name: "10ダメージ", cost: 2, desc: "", type: "attack", value: 10, rarity: "uncommon", cat: "atk", isInitial: false },
 
-{ id: 2101, name: "10ダメージ", cost: 1, desc: "", type: "attack", value: 10, rarity: "rare", cat: "atk", isInitial: false },
+{ id: 2101, name: "12ダメージ", cost: 1, desc: "", type: "attack", value: 12, rarity: "rare", cat: "atk", isInitial: false },
 { id: 2102, name: "15ダメージ", cost: 2, desc: "", type: "attack", value: 15, rarity: "rare", cat: "atk", isInitial: false },
-{ id: 2103, name: "20ダメージ", cost: 3, desc: "", type: "attack", value: 20, rarity: "rare", cat: "atk", isInitial: false },
+{ id: 2103, name: "18ダメージ", cost: 3, desc: "", type: "attack", value: 18, rarity: "rare", cat: "atk", isInitial: false },
 
 { id: 3101, name: "20ダメージ", cost: 2, desc: "", type: "attack", value: 20, rarity: "legend", cat: "atk", isInitial: false },
-{ id: 3102, name: "25ダメージ", cost: 3, desc: "", type: "attack", value: 25, rarity: "legend", cat: "atk", isInitial: false },
-{ id: 3103, name: "30ダメージ", cost: 4, desc: "", type: "attack", value: 30, rarity: "legend", cat: "atk", isInitial: false },
+{ id: 3102, name: "23ダメージ", cost: 3, desc: "", type: "attack", value: 23, rarity: "legend", cat: "atk", isInitial: false },
+{ id: 3103, name: "26ダメージ", cost: 4, desc: "", type: "attack", value: 26, rarity: "legend", cat: "atk", isInitial: false },
 
-{ id: 4101, name: "30ダメージ", cost: 3, desc: "", type: "attack", value: 30, rarity: "space", cat: "atk", isInitial: false },
-{ id: 4102, name: "35ダメージ", cost: 4, desc: "", type: "attack", value: 35, rarity: "space", cat: "atk", isInitial: false },
-{ id: 4103, name: "40ダメージ", cost: 5, desc: "", type: "attack", value: 40, rarity: "space", cat: "atk", isInitial: false },
+{ id: 4101, name: "28ダメージ", cost: 3, desc: "", type: "attack", value: 28, rarity: "space", cat: "atk", isInitial: false },
+{ id: 4102, name: "31ダメージ", cost: 4, desc: "", type: "attack", value: 31, rarity: "space", cat: "atk", isInitial: false },
+{ id: 4103, name: "34ダメージ", cost: 5, desc: "", type: "attack", value: 34, rarity: "space", cat: "atk", isInitial: false },
 
 
 
 // type: "burnplus" -> id順
-{ id: 1104, name: "7ダメージ+追加ダメージ", cost: 3, desc: "7ダメージ、敵が火傷状態なら+11ダメージ", type: "burnplus", value: 7, status: 11, rarity: "uncommon", cat: "atk", isInitial: false },
+{ id: 1104, name: "5ダメージ+追加ダメージ", cost: 3, desc: "5ダメージ、敵が火傷状態なら+10ダメージ", type: "burnplus", value: 5, status: 10, rarity: "uncommon", cat: "atk", isInitial: false },
 { id: 2104, name: "10ダメージ+追加ダメージ", cost: 3, desc: "10ダメージ、敵が火傷状態なら+13ダメージ", type: "burnplus", value: 10, status: 13, rarity: "rare", cat: "atk", isInitial: false },
-{ id: 3104, name: "15ダメージ+追加ダメージ", cost: 4, desc: "15ダメージ+敵が火傷状態なら+18ダメージ", type: "burnplus", value: 15, status: 18, rarity: "legend", cat: "atk", isInitial: false },
-{ id: 4104, name: "18ダメージ+追加ダメージ", cost: 4, desc: "18ダメージ+敵が火傷状態なら+20ダメージ", type: "burnplus", value: 18, status: 20, rarity: "space", cat: "atk", isInitial: false },
+{ id: 3104, name: "10ダメージ+追加ダメージ", cost: 4, desc: "10ダメージ+敵が火傷状態なら+20ダメージ", type: "burnplus", value: 10, status: 20, rarity: "legend", cat: "atk", isInitial: false },
+{ id: 4104, name: "10ダメージ+追加ダメージ", cost: 4, desc: "10ダメージ+敵が火傷状態なら+25ダメージ", type: "burnplus", value: 15, status: 25, rarity: "space", cat: "atk", isInitial: false },
 
 
 // type: "blockAttackFull" -> id順
@@ -38,7 +38,7 @@ const allCardsMaster = [
 
 
 // type: "curseBurst" -> id順
-{ id: 1106, name: "呪いの枚数×10ダメ", cost: 2, desc: "手札にある呪いカードの枚数×10ダメージ。", type: "curseBurst", value: 10, rarity: "uncommon", cat: "atk", isInitial: false },
+{ id: 1106, name: "呪いの枚数×8ダメ", cost: 2, desc: "手札にある呪いカードの枚数×8ダメージ。", type: "curseBurst", value: 8, rarity: "uncommon", cat: "atk", isInitial: false },
 
 
 // type: "discardSaber" -> id順
@@ -99,14 +99,14 @@ const allCardsMaster = [
 // type: "nkai" -> id順
 
 { id: 1116, name: "使用した数ダメージ", cost: 3, desc: "使うたびにダメージを+1", type: "nkai", value: 0, rarity: "uncommon", cat: "atk", isInitial: false },
-{ id: 2116, name: "7ダメージ+使用した数ダメージ", cost: 3, desc: "7ダメージ+使うたびにダメージを+1", type: "nkai", value: 7, rarity: "rare", cat: "atk", isInitial: false },
+{ id: 2116, name: "8ダメージ+使用した数ダメージ", cost: 3, desc: "8ダメージ+使うたびにダメージを+1", type: "nkai", value: 8, rarity: "rare", cat: "atk", isInitial: false },
 
 
 // type: "shieldBash" -> id順
-{ id: 1117, name: "5ダメ+4ブロック", cost: 2, desc: "", type: "shieldBash", value: 5, blockValue: 4, rarity: "uncommon", cat: "atk", isInitial: false },
-{ id: 2117, name: "10ダメ+10ブロック", cost: 3, desc: "", type: "shieldBash", value: 10, blockValue: 10, rarity: "rare", cat: "atk", isInitial: false },
-{ id: 3117, name: "11ダメ+13ブロック", cost: 4, desc: "", type: "shieldBash", value: 11, blockValue: 13, rarity: "legend", cat: "atk", isInitial: false },
-{ id: 4117, name: "15ダメ+20ブロック", cost: 5, desc: "", type: "shieldBash", value: 15, blockValue: 20, rarity: "space", cat: "atk", isInitial: false },
+{ id: 1117, name: "8ダメ+7ブロック", cost: 3, desc: "", type: "shieldBash", value: 8, blockValue: 7, rarity: "uncommon", cat: "atk", isInitial: false },
+{ id: 2117, name: "12ダメ+12ブロック", cost: 4, desc: "", type: "shieldBash", value: 12, blockValue: 12, rarity: "rare", cat: "atk", isInitial: false },
+{ id: 3117, name: "15ダメ+16ブロック", cost: 5, desc: "", type: "shieldBash", value: 15, blockValue: 16, rarity: "legend", cat: "atk", isInitial: false },
+
 
 
 //
@@ -812,7 +812,7 @@ function showMapDeckManager() {
 
     rewardArea.innerHTML = "";
 
-// 常に「マップに戻る」ボタンを表示する
+    // 常に「マップに戻る」ボタンを表示する
     const skipBtn = rewardScreen.querySelector("button[onclick*='skip']");
     if(skipBtn) {
         skipBtn.style.display = "block";
@@ -854,21 +854,21 @@ function showMapDeckManager() {
 
     
     // 1. 各条件の並び順（インデックス）を定義
-const catPriority = {
-    atk: 0,
-    blk: 1,
-    rec: 2,
-    abn: 3,
-    oth: 4
-};
+    const catPriority = {
+        atk: 0,
+        blk: 1,
+        rec: 2,
+        abn: 3,
+        oth: 4
+    };
 
-const rarityPriority = {
-    common: 0,
-    uncommon: 1,
-    rare: 2,
-    legend: 3,
-    space: 4
-};
+    const rarityPriority = {
+        common: 0,
+        uncommon: 1,
+        rare: 2,
+        legend: 3,
+        space: 4
+    };
 
     // 2. 現在のデッキに入っている有効なカードのマスターデータを配列に集める
     let deckCardsList = [];
@@ -881,32 +881,29 @@ const rarityPriority = {
     }
 
     // 3. 指定された優先順位でソートを実行
-   deckCardsList.sort((a, b) => {
+    deckCardsList.sort((a, b) => {
+        // ① カテゴリ
+        const aCat = catPriority[a.cat] ?? 999;
+        const bCat = catPriority[b.cat] ?? 999;
 
-    // ① カテゴリ
-    const aCat = catPriority[a.cat] ?? 999;
-    const bCat = catPriority[b.cat] ?? 999;
+        if (aCat !== bCat) {
+            return aCat - bCat;
+        }
 
-    if (aCat !== bCat) {
-        return aCat - bCat;
-    }
+        // ② ID下2桁
+        const aId = Number(a.id) % 100;
+        const bId = Number(b.id) % 100;
 
-    // ② ID下2桁
-    const aId = Number(a.id) % 100;
-    const bId = Number(b.id) % 100;
+        if (aId !== bId) {
+            return aId - bId;
+        }
 
-    if (aId !== bId) {
-        return aId - bId;
-    }
+        // ③ レアリティ
+        const aRare = rarityPriority[a.rarity] ?? 999;
+        const bRare = rarityPriority[b.rarity] ?? 999;
 
-    // ③ レアリティ
-    const aRare = rarityPriority[a.rarity] ?? 999;
-    const bRare = rarityPriority[b.rarity] ?? 999;
-
-    return aRare - bRare;
-});
-
-    // ─── ✨【ここまで】 ───
+        return aRare - bRare;
+    });
 
     // ソート済みの配列を元に画面に一覧表示
     if (deckCardsList.length > 0) {
@@ -924,7 +921,7 @@ const rarityPriority = {
                 <p>${master.desc}</p>
             `;
             
-div.onclick = function() {
+            div.onclick = function() {
                 // 💡 休憩所のカード削除モード時の割り込みロジック（複数枚対応）
                 if (window.isRestRoomDeletionMode) {
                     const currentCardId = id; // id は master.id
@@ -934,6 +931,18 @@ div.onclick = function() {
                     // 1. まず25ゴールド持っているかチェック
                     if ((player.gold || 0) < 25) {
                         alert("ゴールドが足りないため、これ以上カードを削除できません！");
+                        return;
+                    }
+
+                    // ★★★【追加】削除する前に現在の合計枚数をリアルタイムに再計算★★★
+                    let checkTotal = 0;
+                    for (let dId in currentDeck) {
+                        checkTotal += currentDeck[dId];
+                    }
+
+                    // デッキ枚数が20枚以下なら削除を絶対に拒否する
+                    if (checkTotal <= 20) {
+                        alert(`これ以上カードを削除できません！デッキの最低枚数は20枚です。\n(現在: ${checkTotal}枚)`);
                         return;
                     }
 
@@ -950,10 +959,10 @@ div.onclick = function() {
                         localStorage.setItem("mini_spire_saved_decks", JSON.stringify(window.savedDecks));
 
                         // 5. 画面を閉じずに、表示されている枚数やタイトルをリアルタイムで更新する
-                        let totalCards = 0;
-                        for (let dId in currentDeck) { totalCards += currentDeck[dId]; }
+                        let afterTotal = 0;
+                        for (let dId in currentDeck) { afterTotal += currentDeck[dId]; }
                         if (rewardTitle) {
-                            rewardTitle.innerHTML = `📜 現在のデッキ（合計: ${totalCards}枚）<br><span style="color:#ffae42; font-size:14px; font-weight:bold;">【削除モード中】カードを選ぶと25Gで削除できます（所持: ${player.gold}G）</span>`;
+                            rewardTitle.innerHTML = `📜 現在のデッキ（合計: ${afterTotal}枚）<br><span style="color:#ffae42; font-size:14px; font-weight:bold;">【削除モード中】カードを選ぶと25Gで削除できます（所持: ${player.gold}G）</span>`;
                         }
 
                         // 所持数が0枚になったらカード要素を非表示、まだあるなら枚数表示を更新

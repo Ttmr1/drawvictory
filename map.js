@@ -235,6 +235,7 @@ function triggerRestRoomChoiceEvent() {
     deleteOption.style.borderRadius = "8px";
     deleteOption.style.backgroundColor = "rgba(228, 63, 90, 0.1)";
 
+
     if (totalCards <= 20) {
         // デッキが20枚以下の制限ロック
         deleteOption.style.opacity = "0.5";
@@ -805,16 +806,43 @@ function handleSimplePromptDeletion() {
     
     const inputId = prompt(cardListString);
     if (inputId !== null && currentDeck[inputId] && currentDeck[inputId] > 0) {
+        
+        // ★★★ 【追加】実際に削除する前に現在のデッキの総枚数を再計算 ★★★
+        let totalCards = 0;
+        for (let id in currentDeck) {
+            totalCards += currentDeck[id];
+        }
+
+        // デッキが20枚以下の場合は削除を拒否し、ゴールドを戻してやり直す
+        if (totalCards <= 20) {
+            alert(`これ以上カードを削除できません！デッキの最低枚数は20枚です。\n(現在: ${totalCards}枚)`);
+            alert("ゴールド(25G)を返却して選択し直します。");
+            player.gold += 25; // 既に消費されている想定の25Gを返却
+            if (typeof updateUI === 'function') updateUI();
+            triggerRestRoomChoiceEvent(); // もう一度選択モーダルをやり直す
+            return; // 処理を終了
+        }
+
+        // 条件クリアしている場合のみ削除
         currentDeck[inputId]--;
+        
+        // 枚数が0になったらキーごと削除（不要なら残してもOKですがデータクレンジングのため推奨）
+        if (currentDeck[inputId] <= 0) {
+            delete currentDeck[inputId];
+        }
+
+        // ローカルストレージへの保存処理（もし必要であれば）
+        localStorage.setItem("mini_spire_saved_decks", JSON.stringify(savedDecks));
+
         alert("カードを1枚削除しました。");
         finishRestRoom();
     } else {
         alert("無効なID、または削除をキャンセルしました。ゴールド(25G)を返却して選択し直します。");
         player.gold += 25;
+        if (typeof updateUI === 'function') updateUI();
         triggerRestRoomChoiceEvent(); // もう一度選択モーダルをやり直す
     }
 }
-
 // =========================================================================
 // 📊 ゲームUI総合更新処理（戦闘時・マップ表示共通）
 // =========================================================================
