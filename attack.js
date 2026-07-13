@@ -1,4 +1,3 @@
-
 //敵に毒が付与できるかを判定する関数
 function canApplyPoisonToEnemy() {
     if (!enemy.data) return true;
@@ -65,7 +64,6 @@ const adrenalineBonus = player.status.adrenalineAtk || 0;
     if (card.type === "curse") {
         player.hp -= card.value;
         if (player.hp <= 0) {
-	    alert(`Game Over`);
 	    gameover();
 	}
     }
@@ -83,6 +81,12 @@ const adrenalineBonus = player.status.adrenalineAtk || 0;
     if (card.type === "attack") {
 	card.value=card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
         damageEnemy(card.value);
+    }
+
+//貫通：敵の防御値を無視して〇ダメージ
+    if (card.type === "pierceAttack") {
+	card.value=card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
+        damageEnemy(card.value, true); // ignoreBlock=true で防御を無視
     }
 
 //HP〇消費して〇ダメージ
@@ -161,7 +165,7 @@ if (card.type === "gambling") {
         if (!isBoss && rand < card.value) {
             // 即死成功（ボスの場合はこのルートに入らない）
             enemy.hp = 0;
-            alert(`🎲敵を即死させました！`);
+            customAlert(`🎲敵を即死させました！`);
             if (typeof createDamagePopup === 'function') createDamagePopup("☠️ INSTANT KILL", true);
         } else {
             // 即死失敗、または対象がボスのため自傷ダメージ処理
@@ -170,7 +174,7 @@ if (card.type === "gambling") {
             player.hp = Math.max(0, player.hp - selfDamage);
             
             if (isBoss) {
-                alert(`🎲ボスには効かない、（${selfDamage}ダメージ）を受けた`);
+                customAlert(`🎲ボスには効かない、（${selfDamage}ダメージ）を受けた`);
             }
             
             if (typeof createDamagePopup === 'function') createDamagePopup(`💥-${selfDamage}`, false);
@@ -417,18 +421,35 @@ while (isHitting && count < 10) {
     }
 
 
-//超攻撃型をバランス型へ
+//超攻撃型・攻撃型・防御型・超防御型をバランス型へ
 if (card.type === "camouflage") {
         enemy.status.camouflageTurns = card.duration;
+        // どの行動スタイルを対象にするか（未指定の場合は従来通り「超攻撃特化」）
+        const targetStyle = card.target || "super_attack";
+        enemy.status.camouflageTarget = targetStyle;
 
-        // もし現在、敵の次のスタイルがすでに「超攻撃特化」なら即座に「バランス型」に書き換える
-        if (enemy.nextStyleKey === 'super_attack') {
+        // もし現在、敵の次のスタイルがすでに対象スタイルなら即座に「バランス型」に書き換える
+        if (enemy.nextStyleKey === targetStyle) {
             enemy.nextStyleKey = 'balance';
             // ───【追加】行動制御フラグを立てる ───
             enemy.status.behaviorControlled = true;
         } else {
             enemy.status.behaviorControlled = false;
         }
+    }
+
+
+//攻撃予知：敵の次の行動タイプを見破り、裏をかかれなくなる
+if (card.type === "predictEnemy") {
+        enemy.status.predictTurns = card.turn || 1;
+
+        const predictedKey = enemy.nextStyleKey || "balance";
+        const predictedInfo = window.aiStyles ? window.aiStyles[predictedKey] : null;
+        const predictedName = predictedInfo ? predictedInfo.name : "バランスを重視している";
+
+        customAlert(`🔮 攻撃予知！敵は「${predictedName}」`);
+
+        if (typeof updateUI === 'function') updateUI();
     }
 
 
@@ -509,7 +530,7 @@ if (card.type === "curseWall") {
 // コピー
 if (card.type === "nextCopy") {
     window.nextCardCopyActive = true;
-    alert("次に使用するカードがコピーされます！");
+    customAlert("次に使用するカードがコピーされます！");
 }
 
 //タイムループ(処理はfunction playcard)
@@ -537,7 +558,7 @@ if (card.type === "DiscardDraw") {
     }
 
     if (hand.length <= 1) {
-        alert("選択できる他の手札がありません。効果をスキップします。");
+        customAlert("選択できる他の手札がありません。効果をスキップします。");
         return;
     }
 
@@ -549,7 +570,7 @@ if (card.type === "DiscardDraw") {
         usedCardIndex: index
     };
 
-    alert(`手札から外すカードを ${Math.min(card.value, hand.length - 1)} 枚、クリックして選んでください。`);
+    customAlert(`手札から外すカードを ${Math.min(card.value, hand.length - 1)} 枚、クリックして選んでください。`);
 
     if (typeof renderHand === "function") renderHand();
 }
@@ -591,9 +612,34 @@ if (card.type === "DiscardDraw") {
                 drawOneCard();
             }
         }
-        alert(`手札を ${discardCount} 枚捨て、${drawCount} 枚引き直しました。`);
+        customAlert(`手札を ${discardCount} 枚捨て、${drawCount} 枚引き直しました。`);
         
         // 手札のUIを更新する（バトル画面の再描画関数があれば呼び出す）
+        if (typeof updateUI === 'function') updateUI();
+    }
+
+    // 浄化：デッキ・手札・捨て札から呪いカードを全て除去する（このカード自身は捨て札に送らず除去される）
+    if (card.type === "purifyCurse") {
+        let removedCount = 0;
+
+        if (typeof deck !== 'undefined') {
+            const beforeDeck = deck.length;
+            deck = deck.filter(c => c.type !== "curse");
+            removedCount += beforeDeck - deck.length;
+        }
+
+        const beforeHand = hand.length;
+        hand = hand.filter(c => c.type !== "curse");
+        removedCount += beforeHand - hand.length;
+
+        if (typeof discardPile !== 'undefined') {
+            const beforeDiscard = discardPile.length;
+            discardPile = discardPile.filter(c => c.type !== "curse");
+            removedCount += beforeDiscard - discardPile.length;
+        }
+
+        customAlert(`✨ 浄化！呪いカードを ${removedCount} 枚デッキから除去した！`);
+
         if (typeof updateUI === 'function') updateUI();
     }
 

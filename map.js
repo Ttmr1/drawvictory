@@ -174,7 +174,7 @@ function openMap(){
         if (typeof showMapDeckManager === 'function') {
             showMapDeckManager();
         } else {
-            alert("デッキ確認機能がまだ準備できていません。");
+            customAlert("デッキ確認機能がまだ準備できていません。");
         }
     };
     const mapPanel = mapScreen.querySelector(".panel");
@@ -266,7 +266,7 @@ function triggerRestRoomChoiceEvent() {
             rewardScreen.style.display = "none"; // 休憩所モーダルを閉じる
             
             if (typeof showMapDeckManager === "function") {
-                alert("削除したいカードをクリックしてください。");
+                customAlert("削除したいカードをクリックしてください。");
                 showMapDeckManager(); // デッキ画面を開く
             } else {
                 handleSimplePromptDeletion();
@@ -334,7 +334,7 @@ function triggerRestRoomChoiceEvent() {
     `;
     healOption.onclick = function() {
         player.hp = Math.min(player.maxHp, player.hp + extraHealAmount);
-        alert(`💖 体力が ${extraHealAmount} 回復しました！`);
+        customAlert(`💖 体力が ${extraHealAmount} 回復しました！`);
         finishRestRoom();
     };
     rewardArea.appendChild(healOption);
@@ -357,7 +357,7 @@ function triggerRestRoomChoiceEvent() {
         const goldPool = [100, 125, 150];
         const randomGold = goldPool[Math.floor(Math.random() * goldPool.length)];
         player.gold += randomGold;
-        alert(`💰 ${randomGold} ゴールドを見つけました！`);
+        customAlert(`💰 ${randomGold} ゴールドを見つけました！`);
         finishRestRoom();
     };
     rewardArea.appendChild(goldOption);
@@ -693,7 +693,7 @@ previewArea.appendChild(wrap);
         // 💡 【バグ修正】IDの不一致（"forgeExecute" -> "btnForgeExecute"）を修正してイベントをバインド
         document.getElementById("btnForgeExecute").onclick = function() {
             if (player.gold < 100) {
-                alert("💰 ゴールドが足りません！");
+                customAlert("💰 ゴールドが足りません！");
                 return;
             }
 
@@ -718,7 +718,7 @@ const upgradedCardData =
     allCardsMaster.find(c => c.id == upgradedId);
 
 if (!upgradedCardData) {
-    alert("このカードはアップグレード先がありません。");
+    customAlert("このカードはアップグレード先がありません。");
     return;
 }
 
@@ -726,7 +726,7 @@ if (!upgradedCardData) {
         currentDeck[upgradedId] = (currentDeck[upgradedId] || 0) + 1;
 
         const nextName = upgradedCardData ? upgradedCardData.name : (data.name + "+");
-        alert(`⚒️ 「${data.name}」が「${nextName}」に強化されました！`);
+        customAlert(`⚒️ 「${data.name}」が「${nextName}」に強化されました！`);
     }
 
             // モーダルを閉じて休憩所イベントを終了する
@@ -740,7 +740,7 @@ upgradeModal.remove();
 if (window.upgradeCount < 7) {
     handleSimplePromptUpgrade();
 } else {
-    alert("⚒️ 強化回数が7回に達しました。");
+    customAlert("⚒️ 強化回数が7回に達しました。");
     finishRestRoom();
 }
         };
@@ -815,8 +815,8 @@ function handleSimplePromptDeletion() {
 
         // デッキが20枚以下の場合は削除を拒否し、ゴールドを戻してやり直す
         if (totalCards <= 20) {
-            alert(`これ以上カードを削除できません！デッキの最低枚数は20枚です。\n(現在: ${totalCards}枚)`);
-            alert("ゴールド(25G)を返却して選択し直します。");
+            customAlert(`これ以上カードを削除できません！デッキの最低枚数は20枚です。\n(現在: ${totalCards}枚)`);
+            customAlert("ゴールド(25G)を返却して選択し直します。");
             player.gold += 25; // 既に消費されている想定の25Gを返却
             if (typeof updateUI === 'function') updateUI();
             triggerRestRoomChoiceEvent(); // もう一度選択モーダルをやり直す
@@ -834,10 +834,10 @@ function handleSimplePromptDeletion() {
         // ローカルストレージへの保存処理（もし必要であれば）
         localStorage.setItem("mini_spire_saved_decks", JSON.stringify(savedDecks));
 
-        alert("カードを1枚削除しました。");
+        customAlert("カードを1枚削除しました。");
         finishRestRoom();
     } else {
-        alert("無効なID、または削除をキャンセルしました。ゴールド(25G)を返却して選択し直します。");
+        customAlert("無効なID、または削除をキャンセルしました。ゴールド(25G)を返却して選択し直します。");
         player.gold += 25;
         if (typeof updateUI === 'function') updateUI();
         triggerRestRoomChoiceEvent(); // もう一度選択モーダルをやり直す
@@ -978,7 +978,18 @@ if (isOrcBerserk) {
     if(enemy.status.burn > 0) statusText += `🔥火傷:${enemy.status.burn}<br>`;
     if(enemy.status.freeze > 0) statusText += `❄️凍結:${enemy.status.freeze}T<br>`;
     if(enemy.status.stun > 0 && enemy.data.name !== "Dragon") statusText += `💫スタン状態<br>`; 
-    if(enemy.status.behaviorControlled && enemy.status.camouflageTurns > 0) statusText += `行動制御:超攻撃→バランス(${enemy.status.camouflageTurns}T)<br>`;
+    if(enemy.status.behaviorControlled && enemy.status.camouflageTurns > 0) {
+        const targetStyle = enemy.status.camouflageTarget || 'super_attack';
+        const targetLabels = { super_attack: "超攻撃特化", attack: "攻撃特化", defense: "防御特化", super_defense: "超防御特化" };
+        const targetLabel = targetLabels[targetStyle] || targetStyle;
+        statusText += `行動制御:${targetLabel}→バランス(${enemy.status.camouflageTurns}T)<br>`;
+    }
+    if(enemy.status.predictTurns > 0) {
+        const predictedKey = enemy.nextStyleKey || "balance";
+        const predictedInfo = window.aiStyles ? window.aiStyles[predictedKey] : null;
+        const predictedName = predictedInfo ? predictedInfo.name : "バランスを重視している";
+        statusText += `🔮攻撃予知:${predictedName}(${enemy.status.predictTurns}T)<br>`;
+    }
 
 
     if(enemy.data){

@@ -1,4 +1,4 @@
-	// state.js
+// state.js
 // =========================================================================
 // 🧙 Mini Spire Ultimate - プレイヤー・敵ステータス ＆ グローバル管理
 // =========================================================================
@@ -143,6 +143,80 @@ function closeMenuPopup() {
     const menuScreen = document.getElementById("menuScreen");
     if(menuScreen) menuScreen.style.display = "none";
 }
+
+/**
+ * 💡 ラベルの数字をリアルタイム更新
+ */
+function updateAlertTimeLabel(val) {
+    document.getElementById("alertTimeVal").innerText = val;
+}
+
+/**
+ * 💡 設定を保存し、テストアラートを表示
+ */
+function saveAndTestAlert() {
+    const time = document.getElementById("alertTimeRange").value;
+    localStorage.setItem("alert_display_time", time);
+    
+    // テスト表示
+    const testMsg = time == 0 ? "アラートは表示されません" : `表示時間は ${time} 秒です`;
+    customAlert(testMsg, time);
+}
+
+/**
+ * 💡 独自アラート関数
+ * @param {string} message - 表示内容
+ * @param {number} seconds - 表示する秒数
+ */
+const CUSTOM_ALERT_MAX_VISIBLE = 3; // 同時に表示できるアラートの最大数
+window._customAlertQueue = [];       // 表示待ちのアラート
+window._customAlertActiveCount = 0;  // 現在表示中の数
+
+function customAlert(message, seconds) {
+    // 秒数が指定されていない場合は設定値（未設定なら4秒）を使用する
+    if (seconds === undefined || seconds === null || isNaN(seconds)) {
+        const saved = localStorage.getItem("alert_display_time");
+        seconds = saved !== null ? Number(saved) : 4;
+    }
+
+    if (seconds == 0) return; // 0秒なら何もしない
+
+    window._customAlertQueue.push({ message, seconds });
+    processCustomAlertQueue();
+}
+
+// キューを確認し、表示枠（最大3つ）に空きがあれば次のアラートを表示する
+function processCustomAlertQueue() {
+    const modal = document.getElementById("customAlertModal");
+    if (!modal) {
+        console.warn("customAlertModal が見つかりません");
+        return;
+    }
+
+    while (window._customAlertActiveCount < CUSTOM_ALERT_MAX_VISIBLE && window._customAlertQueue.length > 0) {
+        const { message, seconds } = window._customAlertQueue.shift();
+
+        const item = document.createElement("div");
+        item.className = "custom-alert-modal-item";
+        item.innerText = message;
+        item.onclick = () => removeCustomAlertItem(item);
+
+        modal.appendChild(item);
+        window._customAlertActiveCount++;
+
+        setTimeout(() => removeCustomAlertItem(item), seconds * 1000);
+    }
+}
+
+// 表示中のアラート要素を1つ取り除き、キューに待ちがあれば次を表示する
+function removeCustomAlertItem(item) {
+    if (!item || !item.parentNode) return; // 既に削除済み
+    item.remove();
+    window._customAlertActiveCount--;
+    processCustomAlertQueue();
+}
+
+
 
 // 🔄 タブを切り替えて対応する説明文を表示する
 function switchMenuTab(tabName) {
@@ -534,6 +608,35 @@ function switchMenuTab(tabName) {
                 </div>
                 <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
                     戦闘開始時に以下の特性の中からランダムに2つ選ばれる。物理無効化、状態異常無効化、毎ターン攻撃力増加、毎ターン回復、漏電付与、忘却を付与、未熟を付与。なお、物理無効化または状態異常無効化が選ばれたとき、特性をこの1つのみとする。 
+                </div>
+            </div>
+
+
+
+
+<div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>Bastion 💠</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <strong style="color: #00adb5;">【防御貫通不可】</strong>
+                        <span style="color: gold;">200G</span>
+                    </div>
+                </div>
+                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    防御値（ブロック）が0にならない限り、いかなる攻撃もダメージが通らない。毒や火傷など、通常はブロックを無視するダメージも例外なく防御で受け止められてしまう。まずブロックを削り切ることが攻略の鍵。
+                </div>
+            </div>
+
+            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>Fate ✨</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <strong style="color: #00adb5;">【毎ターンランダム運命】</strong>
+                        <span style="color: gold;">200G</span>
+                    </div>
+                </div>
+                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    5%でプレイヤーに最大HP40%分ダメージ、20%で敵自身に最大HP10%分の自爆ダメージ、10%で敵自身のブロックを30獲得、15%でプレイヤーに最大HP10%分ダメージ。残り50%は何も起こらない。
                 </div>
             </div>
 

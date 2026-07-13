@@ -95,18 +95,18 @@ function startBattle(){
         } else if (areaRoll < 80) {
             window.currentArea = "rain"; // 雨エリア (10%)
             document.body.style.setProperty('background', '#1c2331', 'important');
-            alert("🌧️ 雨エリアに突入！火傷が無効化され、毎ターンHPが2回復します。");
+            customAlert("🌧️ 雨エリアに突入！火傷が無効化され、毎ターンHPが2回復します。");
         } else if (areaRoll < 90) {
             window.currentArea = "sunny"; // 日照りエリア (10%)
             document.body.style.setProperty('background', '#3a1c1c', 'important');
-            alert("☀️ 日照りエリアに突入！火傷ダメージが2倍になり、毎ターン2ダメージ受けます。");
+            customAlert("☀️ 日照りエリアに突入！火傷ダメージが2倍になり、毎ターン2ダメージ受けます。");
         } else {
             window.currentArea = "fog"; // 霧エリア(10%)
             document.body.style.setProperty('background', '#4a4a4a', 'important');
             // 最大エネルギーを元の1.2倍にする（端数切り捨て、最低+1）
             player.maxEnergy = Math.floor(window.originalMaxEnergy * 1.2);
             player.energy = player.maxEnergy; // 現在のエネルギーも同期
-            alert("🌫️ 霧エリアに突入！プレイヤーの命中率が75%に低下、最大エネルギーが1.2倍になります。");
+            customAlert("🌫️ 霧エリアに突入！プレイヤーの命中率が75%に低下、最大エネルギーが1.2倍になります。");
         }
     } else {
         // 設定がOFF、またはボス戦・1階の場合は強制的に「なし」
@@ -236,7 +236,7 @@ function playCard(index){
             if (typeof renderHand === 'function') renderHand();
             if (typeof updateUI === 'function') updateUI();
         } else {
-            alert(`選択しました。あと ${maxSelectable - mode.selectedIndices.length} 枚選んでください。`);
+            customAlert(`選択しました。あと ${maxSelectable - mode.selectedIndices.length} 枚選んでください。`);
         }
         return; // 選択モード中の時は、通常の「カード使用処理」を走らせずにここで終了する
     }
@@ -258,7 +258,7 @@ function playCard(index){
             const catNames = { atk: "攻撃", blk: "ブロック", rec: "回復", abn: "状態異常" };
             const displayName = catNames[currentCardCat] || currentCardCat;
             
-            alert(`🔮 マギカの呪い！【${displayName}】系のカードは使用できません！`);
+            customAlert(`🔮 マギカの呪い！【${displayName}】系のカードは使用できません！`);
             if (typeof renderHand === 'function') renderHand();
             return; 
         }
@@ -267,7 +267,7 @@ function playCard(index){
     // フェンリル特性 (未熟の加算前・加算後のどちらのコストで判定するかにより actualCost か card.cost を選べます。ここでは元のコストで判定)
     if(enemy.data && enemy.data.name === "Fenrir"){
         if(card.cost % 2 === 0){
-            alert("🐺 フェンリルの特性：コストが偶数のカードは使えない！");
+            customAlert("🐺 フェンリルの特性：コストが偶数のカードは使えない！");
             if(typeof renderHand === 'function') renderHand();
             return;
         }
@@ -281,7 +281,7 @@ function playCard(index){
             const catNames = { atk: "攻撃", blk: "ブロック", rec: "回復", abn: "状態異常" };
             const displayName = catNames[currentCardCat] || currentCardCat;
             
-            alert(`🧙‍♂️ 魔女の呪い！【${displayName}】系のカードは使用できません！`);
+            customAlert(`🧙‍♂️ 魔女の呪い！【${displayName}】系のカードは使用できません！`);
             if (typeof renderHand === 'function') renderHand();
             return; 
         }
@@ -337,6 +337,11 @@ function playCard(index){
     if (card.type === "handSacrifice") {
         discardPile.push(card);
         hand = [];
+    } else if (card.type === "purifyCurse") {
+        // 浄化：効果内で手札の呪いカードを除去し配列が再構築されているため、
+        // 参照でこのカード自身の位置を探して除去する（捨て札には送らず完全に除去）
+        const selfIndex = hand.indexOf(card);
+        if (selfIndex !== -1) hand.splice(selfIndex, 1);
     } else {
         // タイムループ中なら捨て札へ送らない
         if (player.status.timeLoop > 0 && card.type !== "timeLoop" && card.cost !==0 ) {
@@ -413,23 +418,23 @@ if(enemy.data.name==="Trait"){
 
             case "leak":
                 player.status.leak=2;
-                alert("漏電を受けた！");
+                customAlert("漏電を受けた！");
                 break;
 
             case "amnesia":
                 player.status.amnesia=2;
-                alert("忘却を受けた！");
+                customAlert("忘却を受けた！");
                 break;
 
             case "immaturity":
                 player.status.immaturity=2;
-                alert("未熟を受けた！");
+                customAlert("未熟を受けた！");
                 break;
 
             case "fixedDamage":
                 const dmg=Math.ceil(player.maxHp*0.02);
                 player.hp=Math.max(0,player.hp-dmg);
-                alert(`固定ダメージ ${dmg}`);
+                customAlert(`固定ダメージ ${dmg}`);
                 break;
         }
 
@@ -448,13 +453,13 @@ if(enemy.data.name==="Trait"){
             // 🧤 耐電状態ならダメージを半分にする
             if (player.status.leakBlockTurns > 0) {
                 leakDamage = Math.floor(leakDamage / 2);
-                alert(`🧤 耐電効果！ 漏電ダメージが半減します。`);
+                customAlert(`🧤 耐電効果！ 漏電ダメージが半減します。`);
             }
             
             player.hp -= leakDamage;
             if (player.hp < 0) player.hp = 0;
             
-            alert(`🔋 漏電により${leakDamage} ダメージを受けた！`);
+            customAlert(`🔋 漏電により${leakDamage} ダメージを受けた！`);
         }
         player.status.leak--;
     }
@@ -489,7 +494,7 @@ if(enemy.data.name==="Trait"){
     if (enemy.status.camouflageTurns > 0) {
         enemy.status.camouflageTurns--;
         if (enemy.status.camouflageTurns === 0) {
-            alert("🍃 行動変動の効果が切れた！");
+            customAlert("🍃 行動変動の効果が切れた！");
         }
     }
 
@@ -588,7 +593,7 @@ if(enemy.data.name==="Trait"){
     // ▼ 盗賊の逃走判定（最初のターン以外で4%の確率）
     if (enemy.data && enemy.data.name === "Thief") {
         if (!window.isFirstTurn && Math.random() < 0.04) {
-            alert("🏴‍☠️ 盗賊は素早く逃げ出した！戦闘が強制終了します。");
+            customAlert("🏴‍☠️ 盗賊は素早く逃げ出した！戦闘が強制終了します。");
             inBattle = false;
             if(endTurnBtn) endTurnBtn.disabled = false;
             if(typeof openMap === 'function') openMap(); // マップに戻る
@@ -656,7 +661,7 @@ if (enemy.data && enemy.data.name === "Greedy") {
         window.witchBannedCategory = categories[Math.floor(Math.random() * categories.length)];
         
         const catNames = { atk: "攻撃", blk: "ブロック", rec: "回復", abn: "状態異常" };
-        alert(`🧙‍♂️次ターンは【${catNames[window.witchBannedCategory] }】系のカードが使用禁止！`);
+        customAlert(`🧙‍♂️次ターンは【${catNames[window.witchBannedCategory] }】系のカードが使用禁止！`);
     } else if (!enemy.data || (enemy.data.name !== "Witch" && enemy.data.name !== "Magica") || enemy.hp <= 0) {
         // 魔女がいない、または倒された時は禁止を解除
         window.witchBannedCategory = null;
@@ -675,7 +680,7 @@ if (enemy.data && enemy.data.name === "Greedy") {
         window.witchBannedCategory = categories[Math.floor(Math.random() * categories.length)];
         
         const catNames = { atk: "攻撃", blk: "ブロック", rec: "回復", abn: "状態異常" };
-        alert(`🔮次ターンは【${catNames[window.witchBannedCategory] }】系のカードが使用禁止！`);
+        customAlert(`🔮次ターンは【${catNames[window.witchBannedCategory] }】系のカードが使用禁止！`);
     } else if (!enemy.data || (enemy.data.name !== "Witch" && enemy.data.name !== "Magica") || enemy.hp <= 0) {
         window.witchBannedCategory = null;
     }
@@ -694,7 +699,7 @@ if (enemy.data && enemy.data.name === "Greedy") {
     if (enemy.status.stun > 0 && enemy.data.name !== "Dragon") {
         enemy.status.stun--; 
         if (Math.random() < (1 / 4)) {
-            alert("敵がスタンした!");
+            customAlert("敵がスタンした!");
             isStunned = true;
         }
     }
@@ -712,30 +717,30 @@ if (enemy.data && enemy.data.name === "Greedy") {
                 if (rng < 1/20) { // 5%
                     const healAmount = Math.floor(player.maxHp * 0.20);
                     player.hp = Math.min(player.maxHp, player.hp + healAmount);
-                    alert(`🤡 ピエロの行動 ${act}:プレイヤーのHPが ${healAmount} 回復！`);
+                    customAlert(`🤡 ピエロの行動 ${act}:プレイヤーのHPが ${healAmount} 回復！`);
                 } else if (rng < 2/20) { // 5%
                     const dmgAmount = Math.floor(player.maxHp * 0.20);
                     player.hp = Math.max(0, player.hp - dmgAmount);
-                    alert(`🤡 ピエロの行動 ${act}:大惨事！プレイヤーに ${dmgAmount} ダメージ！`);
+                    customAlert(`🤡 ピエロの行動 ${act}:大惨事！プレイヤーに ${dmgAmount} ダメージ！`);
                 } else if (rng < 8/20) { // 30%
                     const dmgAmount = Math.floor(player.maxHp * 0.10);
                     player.hp = Math.max(0, player.hp - dmgAmount);
-                    alert(`🤡 ピエロの行動 ${act}:プレイヤーに ${dmgAmount} ダメージ！`);
+                    customAlert(`🤡 ピエロの行動 ${act}:プレイヤーに ${dmgAmount} ダメージ！`);
                 } else if (rng < 11/20) { // 15%
-                    alert(`🤡 ピエロの行動 ${act}:ピエロはお手玉をしている。何も起こらない。`);
+                    customAlert(`🤡 ピエロの行動 ${act}:ピエロはお手玉をしている。何も起こらない。`);
                 } else if (rng < 16/20) { // 25%
                     window.clownEnergyDebuff = true; 
-                    //alert(`🤡 ピエロの行動 ${act}:次のターンの魔力が吸い取られる予感がする…`);
+                    //customAlert(`🤡 ピエロの行動 ${act}:次のターンの魔力が吸い取られる予感がする…`);
                 } else if (rng < 17/20) { // 5%
                     const clownDmg = Math.floor(enemy.maxHp * 0.20);
                     enemy.hp = Math.max(0, enemy.hp - clownDmg);
-                    alert(`🤡 ピエロの行動 ${act}: ピエロは自分でずっこけた！ピエロに ${clownDmg} ダメージ！`);
+                    customAlert(`🤡 ピエロの行動 ${act}: ピエロは自分でずっこけた！ピエロに ${clownDmg} ダメージ！`);
                 } else { // 15%
                     enemy.status.poisonList = [];
                     enemy.status.burn = 0;
                     enemy.status.freeze = 0;
                     enemy.status.stun = 0;
-                    alert(`🤡 ピエロの行動 ${act}: ピエロのすべての状態異常が回復した！`);
+                    customAlert(`🤡 ピエロの行動 ${act}: ピエロのすべての状態異常が回復した！`);
                 }
 
                 if(typeof updateUI === 'function') updateUI();
@@ -754,10 +759,46 @@ if (enemy.data && enemy.data.name === "Greedy") {
             if (logArea) logArea.innerHTML = logText;
 
             if(typeof updateUI === 'function') updateUI();
+        } else if (enemy.data && enemy.data.name === "Fate") {
+            // ✨ Fateのランダム運命行動（毎ターン1回抽選）
+            const rng = Math.random();
+
+            if (rng < 0.05) { // 5%：プレイヤーに最大HP40%分ダメージ
+                const dmgAmount = Math.floor(player.maxHp * 0.40);
+                player.hp = Math.max(0, player.hp - dmgAmount);
+                if (typeof createDamagePopup === 'function') createDamagePopup(dmgAmount, false);
+                customAlert(`✨ 運命の啓示！プレイヤーに ${dmgAmount} ダメージ！`);
+            } else if (rng < 0.25) { // 20%：敵自身に最大HP10%分自爆ダメージ
+                const selfDmg = Math.floor(enemy.maxHp * 0.10);
+                enemy.hp = Math.max(0, enemy.hp - selfDmg);
+                if (typeof createDamagePopup === 'function') createDamagePopup(selfDmg, true);
+                customAlert(`✨ 運命の反動！Fateは自爆し、${selfDmg} ダメージを受けた！`);
+            } else if (rng < 0.35) { // 10%：敵がブロック30を得る
+                enemy.block += 30;
+                customAlert(`✨ 運命の加護！Fateのブロックが30増加した！`);
+            } else if (rng < 0.50) { // 15%：プレイヤーに最大HP10%分ダメージ
+                const dmgAmount = Math.floor(player.maxHp * 0.10);
+                player.hp = Math.max(0, player.hp - dmgAmount);
+                if (typeof createDamagePopup === 'function') createDamagePopup(dmgAmount, false);
+                customAlert(`✨ 運命の悪戯！プレイヤーに ${dmgAmount} ダメージ！`);
+            }
+            // 残り50%は何も起こらない
+
+            if (enemy.hp <= 0) {
+                enemy.hp = 0;
+                if (!tryPhoenixRevive()) {
+                    if(endTurnBtn) endTurnBtn.disabled = false;
+                    victory();
+                    return;
+                }
+            }
+
+            if(typeof updateUI === 'function') updateUI();
         } else {
             // 通常の敵の行動（行動スタイルの反映 ＆ 10%裏切り）
             let finalStyleKey = enemy.nextStyleKey || "balance";
-            const isBetray = Math.random() < 0.10; 
+            // 🔮 攻撃予知が有効な間は、敵が型を偽ること（裏切り）ができない
+            const isBetray = (enemy.status.predictTurns > 0) ? false : Math.random() < 0.10;
 
             if (isBetray && window.aiStyles) {
                 const alternativeKeys = Object.keys(window.aiStyles).filter(k => k !== finalStyleKey);
@@ -767,6 +808,11 @@ if (enemy.data && enemy.data.name === "Greedy") {
 
             const styleInfo = window.aiStyles ? window.aiStyles[finalStyleKey] : { name: "バランスを重視している", atkRate: 1.0, blkRate: 1.0 };
             logText += `<div style="color:#fff; font-weight:bold;">敵の行動: ${styleInfo.name}</div>`;
+
+            // 🔮 攻撃予知の効果はここで消費する（1ターンのみ有効）
+            if (enemy.status.predictTurns > 0) {
+                enemy.status.predictTurns--;
+            }
 
             // 防御値（ブロック）計算
             let baseBlock = Math.floor(Math.random() * 5) + 3;
@@ -823,7 +869,7 @@ if (enemy.data && enemy.data.name === "Greedy") {
                     if (reflectDamage > 0) {
                         enemy.hp -= reflectDamage * 1.5;
                         if (enemy.hp < 0) enemy.hp = 0;
-                        alert(`👊 カウンター発動！ 敵に ${reflectDamage} の反射ダメージ！`);
+                        customAlert(`👊 カウンター発動！ 敵に ${reflectDamage} の反射ダメージ！`);
                         if (typeof createDamagePopup === 'function') createDamagePopup(reflectDamage, true);
                 
                         if (enemy.hp <= 0) {
@@ -845,7 +891,7 @@ if (enemy.data && enemy.data.name === "Greedy") {
             if(enemy.data && enemy.data.name === "Reaper"){
                 if (player.hp <= player.maxHp * 0.2) {
                     player.hp = 0;
-                    alert("🩻死神の鎌によって魂を刈り取られた…");
+                    customAlert("🩻死神の鎌によって魂を刈り取られた…");
                     gameover();
                     return;
                 }
@@ -889,7 +935,7 @@ if (enemy.data && enemy.data.name === "Greedy") {
     if (window.clownEnergyDebuff) {
         player.maxEnergy = Math.max(1, Math.floor(player.maxEnergy / 2));
         window.clownEnergyDebuff = false; 
-        alert(`🤡 ピエロの魔力により、このターンの最大エネルギーが【${player.maxEnergy}】に制限された！`);
+        customAlert(`🤡 ピエロの魔力により、このターンの最大エネルギーが【${player.maxEnergy}】に制限された！`);
     } else {
         player.maxEnergy = 5 + Math.floor(floor / 2); 
 	//霧エリアならエネルギー1.2倍
@@ -959,7 +1005,7 @@ function victory(){
     if (floor === 20) {
         const proceed = confirm(`🎉 20階ボスを撃破！\n所持金: ${player.gold}G\n\nこのまま40階まで挑戦を続けますか？`);
         if (!proceed) {
-            alert(`ゲームを終了します。\n最終所持金: ${player.gold}G`);
+            customAlert(`ゲームを終了します。\n最終所持金: ${player.gold}G`);
             resetDeckBattle();
             const startScreen = document.getElementById("startScreen");
             if(startScreen) startScreen.style.display = "flex";
@@ -967,7 +1013,7 @@ function victory(){
             return;
         }
     } else if (floor >= 40) {
-        alert(`🎉 40階ボスを撃破！ゲームクリアです！\n最終所持金: ${player.gold}G`);
+        customAlert(`🎉 40階ボスを撃破！ゲームクリアです！\n最終所持金: ${player.gold}G`);
         resetDeckBattle();
         const startScreen = document.getElementById("startScreen");
         if(startScreen) startScreen.style.display = "flex";
@@ -975,7 +1021,7 @@ function victory(){
         return;
     }
 
-    alert(`戦闘勝利！ 🎉\n💰 ${gainGold}G を獲得しました！（現在：${player.gold}G）`);
+    customAlert(`戦闘勝利！ 🎉\n💰 ${gainGold}G を獲得しました！（現在：${player.gold}G）`);
 
     const rewardTitle = document.getElementById("rewardTitle");
     if(rewardTitle) rewardTitle.innerText = "カードを1枚選択";
@@ -1114,7 +1160,7 @@ function tryPhoenixRevive(){
         const healAmount = Math.floor(enemy.maxHp * 0.1);
         enemy.hp = healAmount;
         window.phoenixReviveChance += 0.5;
-        alert(
+        customAlert(
             `🐦‍🔥 不死鳥が復活した！\n` +
             `HPを ${healAmount} 回復！\n` +
             `次回復活確率: 1/${window.phoenixReviveChance}`
@@ -1157,7 +1203,7 @@ function getPotionName(type) {
 function usePotion() {
     if (!inBattle) return;
     if (window.playerPotion === null) {
-        alert("ポーションを持っていません！");
+        customAlert("ポーションを持っていません！");
         return;
     }
 
@@ -1166,24 +1212,24 @@ function usePotion() {
 
     if (type === "heal") {
         player.hp = Math.min(player.maxHp, player.hp + 15);
-        alert("❤️‍🩹 回復ポーションを使用！プレイヤーのHPが 15 回復した。");
+        customAlert("❤️‍🩹 回復ポーションを使用！プレイヤーのHPが 15 回復した。");
     } 
     else if (type === "energy") {
         player.energy += 2;
-        alert("⚡ エネルギーポーションを使用！エネルギーが +2 された。");
+        customAlert("⚡ エネルギーポーションを使用！エネルギーが +2 された。");
     } 
     else if (type === "block") {
         player.block += 20;
-        alert("🛡️ 防御ポーションを使用！シールドが 20 増加した。");
+        customAlert("🛡️ 防御ポーションを使用！シールドが 20 増加した。");
     } 
     else if (type === "draw") {
-        alert("🎴 ドローポーションを使用！カードを 3 枚引く。");
+        customAlert("🎴 ドローポーションを使用！カードを 3 枚引く。");
         for (let i = 0; i < 3; i++) {
             if (typeof drawOneCard === 'function') drawOneCard();
         }
     }
     else if (type === "acid") {
-        alert("🧪 強酸ポーションを使用！敵のブロックを 0 にして、毒5(5T) を付与。");
+        customAlert("🧪 強酸ポーションを使用！敵のブロックを 0 にして、毒5(5T) を付与。");
         enemy.block = 0;
         
         if (typeof canApplyPoisonToEnemy === 'function' ? canApplyPoisonToEnemy() : true) {

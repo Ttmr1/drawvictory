@@ -26,6 +26,8 @@ const enemyTypes = {
     assassin: { name:"Assassin",  icon:"🥷", hpRate:0.75, atkRate:1.90, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     greedy:   { name:"Greedy",    icon:"🦹", hpRate:0.75, atkRate:1.00, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     trait:    { name:"Trait",     icon:"👽", hpRate:0.80, atkRate:0.80, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
+    bastion:  { name:"Bastion",   icon:"💠", hpRate:1.00, atkRate:0.85, blockRate:1.50, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
+    fate:     { name:"Fate",      icon:"✨", hpRate:1.10, atkRate:0.59, blockRate:0.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
 
 
 //ボス
@@ -45,7 +47,7 @@ const enemyTypes = {
 function initEnemyStatus() {
 
     //const pool = ["robot"]
-    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait"];
+    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait","bastion","fate"];
 
 // ─── 敵の種類の選定 ───
 
@@ -168,6 +170,11 @@ function damageEnemy(amount, ignoreBlock = false) {
     }
 
     let finalDamage = amount;
+
+    // 💠 Bastion（バスティオン）の特性：防御値が0になるまでは、毒・火傷などブロック無視のダメージも防御で受け止める
+    if (enemy.data && enemy.data.name === "Bastion") {
+        ignoreBlock = false;
+    }
 
     if (!ignoreBlock && finalDamage > 0) {
         if (window.player && window.player.fields && window.player.fields.atk_up) {
@@ -321,7 +328,7 @@ function tryPhoenixRevive(){
         enemy.hp = healAmount;
         window.phoenixReviveChance += 0.5;
 
-        alert(
+        customAlert(
             `🐦‍🔥 不死鳥が復活した！\n` +
             `HPを ${healAmount} 回復！\n` +
             `次回復活確率: 1/${window.phoenixReviveChance}`
@@ -350,12 +357,13 @@ function decideEnemyNextStyle() {
     const keys = Object.keys(window.aiStyles);
     let randomKey = keys[Math.floor(Math.random() * keys.length)];
     
-    // ★カモフラージュ状態かつ、抽選されたのが「超攻撃特化」の場合、強制的に「バランス型」にする
+    // ★カモフラージュ状態かつ、抽選結果が対象スタイルと一致する場合、強制的に「バランス型」にする
 if (enemy.status.camouflageTurns > 0) {
-        if (randomKey === 'super_attack') {
+        const targetStyle = enemy.status.camouflageTarget || 'super_attack';
+        if (randomKey === targetStyle) {
             randomKey = 'balance';
             enemy.status.behaviorControlled = true; // 制御が継続している場合
-            console.log("カモフラージュ効果により超攻撃特化をバランス型に変更しました。");
+            console.log(`カモフラージュ効果により${targetStyle}をバランス型に変更しました。`);
         }
     } else {
         // ───効果が切れたら表示フラグを完全にオフにする ───

@@ -138,6 +138,11 @@ const allCardsMaster = [
 { id: 2122, name: "対magica", cost: 3, desc: "敵がmagicaなら33ダメージ", type: "VsMagica", value: 33, rarity: "rare", cat: "atk", isInitial: false },
 { id: 3122, name: "対magica", cost: 3, desc: "敵がmagicaなら40ダメージ", type: "VsMagica", value: 40, rarity: "legend", cat: "atk", isInitial: false },
 
+// type: "pierceAttack" -> id順
+{ id: 1123, name: "貫通", cost: 2, desc: "敵の防御値を無視して6ダメージ", type: "pierceAttack", value: 6, rarity: "uncommon", cat: "atk", isInitial: false },
+{ id: 2123, name: "貫通", cost: 2, desc: "敵の防御値を無視して11ダメージ", type: "pierceAttack", value: 11, rarity: "rare", cat: "atk", isInitial: false },
+{ id: 3123, name: "貫通", cost: 2, desc: "敵の防御値を無視して16ダメージ", type: "pierceAttack", value: 16, rarity: "legend", cat: "atk", isInitial: false },
+
 // ==========================================
 // 🛡️ cat: "blk" (防御系)
 // ==========================================
@@ -227,14 +232,14 @@ const allCardsMaster = [
 { id: 3403, name: "15ダメ+毒10", cost: 4, desc: "", type: "poisonAttack", value: 15, status: 10, rarity: "legend", cat: "abn", isInitial: false },
 
 // type: "burnAttack" -> id順
-{ id: 404, name: "3ダメ+火傷", cost: 1, desc: "", type: "burnAttack", value: 3, status: 3, rarity: "common", cat: "abn", isInitial: true },
-{ id: 1404, name: "7ダメ+火傷", cost: 1, desc: "", type: "burnAttack", value: 7, status: 1, rarity: "uncommon", cat: "abn", isInitial: false },
-{ id: 2404, name: "17ダメ+火傷", cost: 3, desc: "", type: "burnAttack", value: 17, status: 1, rarity: "rare", cat: "abn", isInitial: false },
-{ id: 3404, name: "23ダメ+火傷", cost: 4, desc: "", type: "burnAttack", value: 23, status: 1, rarity: "legend", cat: "abn", isInitial: false },
+{ id: 404, name: "火傷", cost: 1, desc: "", type: "burnAttack", value: 0, status: 3, rarity: "common", cat: "abn", isInitial: true },
+{ id: 1404, name: "3ダメ+火傷", cost: 1, desc: "", type: "burnAttack", value: 3, status: 1, rarity: "uncommon", cat: "abn", isInitial: false },
+{ id: 2404, name: "10ダメ+火傷", cost: 3, desc: "", type: "burnAttack", value: 10, status: 1, rarity: "rare", cat: "abn", isInitial: false },
+{ id: 3404, name: "15ダメ+火傷", cost: 4, desc: "", type: "burnAttack", value: 15, status: 1, rarity: "legend", cat: "abn", isInitial: false },
 
 // type: "poisonBurn" -> id順
-{ id: 405, name: "毒3+火傷", cost: 1, desc: "", type: "poisonBurn", status: 3, rarity: "common", cat: "abn", isInitial: true },
-{ id: 1405, name: "毒5+火傷", cost: 1, desc: "", type: "poisonBurn", status: 5, rarity: "uncommon", cat: "abn", isInitial: false },
+{ id: 1405, name: "毒4+火傷", cost: 1, desc: "", type: "poisonBurn", status: 3, rarity: "uncommon", cat: "abn", isInitial: false },
+{ id: 2405, name: "毒6+火傷", cost: 1, desc: "", type: "poisonBurn", status: 5, rarity: "rare", cat: "abn", isInitial: false },
 
 // type: "freezeAttack" -> id順
 { id: 406, name: "凍結1", cost: 2, desc: "敵の攻撃66%にする(1ターン)", type: "freezeAttack",value:0, status: 1, rarity: "common", cat: "abn", isInitial: true },
@@ -252,22 +257,17 @@ const allCardsMaster = [
 { id: 2408, name: "各攻撃+4", cost: 3, desc: "攻撃系の攻撃力が+4される。(1ターン)", type: "adrenaline", value: 4, rarity: "rare", cat: "abn", isInitial: false },
 { id: 3408, name: "各攻撃+7", cost: 4, desc: "攻撃系の攻撃力が+7される。(1ターン)", type: "adrenaline", value: 7, rarity: "legend", cat: "abn", isInitial: false },
 
-
-// type: "camouflage" -> id順
-{ id: 1409, name: "超攻撃型をバランス型", cost: 4, desc: "敵の「超攻撃型」を「バランス型」にする(3T)", type: "camouflage", duration: 3, rarity: "uncommon", cat: "abn", isInitial: false },
-
-
 // type: "counterSetup" -> id順
-{ id: 1410, name: "カウンター2T", cost: 1, desc: "受けた敵の物理攻撃を1.5倍のダメージを敵に与える(2ターン)", type: "counterSetup", value: 2, rarity: "uncommon", cat: "abn", isInitial: false },
-{ id: 2410, name: "カウンター3T", cost: 1, desc: "受けた敵の物理攻撃を1.5倍のダメージを敵に与える(3ターン)", type: "counterSetup", value: 3, rarity: "rare", cat: "abn", isInitial: false },
+{ id: 1409, name: "カウンター2T", cost: 1, desc: "受けた敵の物理攻撃を1.5倍のダメージを敵に与える(2ターン)", type: "counterSetup", value: 2, rarity: "uncommon", cat: "abn", isInitial: false },
+{ id: 2409, name: "カウンター3T", cost: 1, desc: "受けた敵の物理攻撃を1.5倍のダメージを敵に与える(3ターン)", type: "counterSetup", value: 3, rarity: "rare", cat: "abn", isInitial: false },
 
 // type: "leakblk" -> id順
-{ id: 1411, name: "耐電1T", cost: 1, desc: "漏電のターンを-1する(1ターン)", type: "leakblk", value: 1, rarity: "uncommon", cat: "abn", isInitial: false },
-{ id: 2411, name: "耐電2T", cost: 1, desc: "漏電のターンを-1する(2ターン)", type: "leakblk", value: 2, rarity: "rare", cat: "abn", isInitial: false },
+{ id: 1410, name: "耐電1T", cost: 1, desc: "漏電のダメージを半分(1ターン)", type: "leakblk", value: 1, rarity: "uncommon", cat: "abn", isInitial: false },
+{ id: 2410, name: "耐電2T", cost: 1, desc: "漏電のダメージを半分(2ターン)", type: "leakblk", value: 2, rarity: "rare", cat: "abn", isInitial: false },
 
 // type: "poisonpoison" -> id順
-{ id: 1412, name: "猛毒", cost: 2, desc: "敵の毒の効果を全て1.5倍かつ残り1ターン", type: "poisonpoison", value: 1.5, turn: 1, rarity: "uncommon", cat: "abn", isInitial: false },
-{ id: 2412, name: "猛毒", cost: 3, desc: "敵の毒の効果を全て1.5倍かつ残り2ターン", type: "poisonpoison", value: 1.5, turn: 2, rarity: "rare", cat: "abn", isInitial: false },
+{ id: 1411, name: "猛毒", cost: 2, desc: "敵の毒の効果を全て1.5倍かつ残り1ターン", type: "poisonpoison", value: 1.5, turn: 1, rarity: "uncommon", cat: "abn", isInitial: false },
+{ id: 2411, name: "猛毒", cost: 3, desc: "敵の毒の効果を全て1.5倍かつ残り2ターン", type: "poisonpoison", value: 1.5, turn: 2, rarity: "rare", cat: "abn", isInitial: false },
 
 
 
@@ -300,6 +300,28 @@ const allCardsMaster = [
 
 { id: 1507, name: "ループ", cost: 3, desc: "ループ状態を付与", type: "timeLoop", rarity: "uncommon", cat: "abn", isInitial: false },
 { id: 2507, name: "ループ", cost: 2, desc: "ループ状態を付与", type: "timeLoop", rarity: "rare", cat: "abn", isInitial: false },
+
+// type: "camouflage" -> id順
+{ id: 1508, name: "超攻撃型をバランス型", cost: 4, desc: "敵の「超攻撃型」を「バランス型」にする(2T)", type: "camouflage", duration: 2, rarity: "uncommon", cat: "oth", isInitial: false },
+{ id: 2508, name: "超攻撃型をバランス型", cost: 4, desc: "敵の「超攻撃型」を「バランス型」にする(3T)", type: "camouflage", duration: 3, rarity: "uncommon", cat: "oth", isInitial: false },
+
+{ id: 1509, name: "攻撃型をバランス型", cost: 4, desc: "敵の「攻撃型」を「バランス型」にする(2T)", type: "camouflage", target: "attack", duration: 2, rarity: "uncommon", cat: "oth", isInitial: false },
+{ id: 2509, name: "攻撃型をバランス型", cost: 4, desc: "敵の「攻撃型」を「バランス型」にする(3T)", type: "camouflage", target: "attack", duration: 3, rarity: "uncommon", cat: "oth", isInitial: false },
+
+{ id: 1510, name: "防御型をバランス型", cost: 4, desc: "敵の「防御型」を「バランス型」にする(2T)", type: "camouflage", target: "defense", duration: 2, rarity: "uncommon", cat: "oth", isInitial: false },
+{ id: 2510, name: "防御型をバランス型", cost: 4, desc: "敵の「防御型」を「バランス型」にする(3T)", type: "camouflage", target: "defense", duration: 3, rarity: "uncommon", cat: "oth", isInitial: false },
+
+{ id: 1511, name: "超防御型をバランス型", cost: 4, desc: "敵の「超防御型」を「バランス型」にする(2T)", type: "camouflage", target: "super_defense", duration: 2, rarity: "uncommon", cat: "oth", isInitial: false },
+{ id: 2511, name: "超防御型をバランス型", cost: 4, desc: "敵の「超防御型」を「バランス型」にする(3T)", type: "camouflage", target: "super_defense", duration: 3, rarity: "uncommon", cat: "oth", isInitial: false },
+
+
+// type: "predictEnemy" -> id順
+{ id: 1512, name: "攻撃予知", cost: 2, desc: "敵の型がわかる(1T)", type: "predictEnemy", turn: 1, rarity: "uncommon", cat: "oth", isInitial: true },
+{ id: 2512, name: "攻撃予知", cost: 3, desc: "敵の型がわかる(2T)", type: "predictEnemy", turn: 2, rarity: "rare", cat: "oth", isInitial: true },
+
+// type: "purifyCurse" -> id順
+{ id: 1513, name: "呪い削除", cost: 1, desc: "デッキの呪いをすべて除去、その後このカードも除去する", type: "purifyCurse", rarity: "uncommon", cat: "oth", isInitial: false },
+
 
 
 // ==========================================
@@ -832,7 +854,7 @@ function showMapDeckManager() {
             // 💡 削除モードを終了してマップへ帰還する処理
             if (window.isRestRoomDeletionMode) {
                 window.isRestRoomDeletionMode = false;
-                alert("カード削除処理を終了しました。マップに戻ります。");
+                customAlert("カード削除処理を終了しました。マップに戻ります。");
                 
                 rewardScreen.style.display = "none";
                 rewardScreen.style.zIndex = ""; 
@@ -930,7 +952,7 @@ function showMapDeckManager() {
 
                     // 1. まず25ゴールド持っているかチェック
                     if ((player.gold || 0) < 25) {
-                        alert("ゴールドが足りないため、これ以上カードを削除できません！");
+                        customAlert("ゴールドが足りないため、これ以上カードを削除できません！");
                         return;
                     }
 
@@ -942,7 +964,7 @@ function showMapDeckManager() {
 
                     // デッキ枚数が20枚以下なら削除を絶対に拒否する
                     if (checkTotal <= 20) {
-                        alert(`これ以上カードを削除できません！デッキの最低枚数は20枚です。\n(現在: ${checkTotal}枚)`);
+                        customAlert(`これ以上カードを削除できません！デッキの最低枚数は20枚です。\n(現在: ${checkTotal}枚)`);
                         return;
                     }
 
@@ -953,7 +975,7 @@ function showMapDeckManager() {
                         // 3. 削除枚数分（1枚あたり25ゴールド）を消費
                         player.gold = Math.max(0, player.gold - 25);
                         
-                        alert(`「${master.name}」を1枚削除しました。`);
+                        customAlert(`「${master.name}」を1枚削除しました。`);
                         
                         // 4. ストレージへ即時保存
                         localStorage.setItem("mini_spire_saved_decks", JSON.stringify(window.savedDecks));
@@ -977,13 +999,13 @@ function showMapDeckManager() {
                         if (typeof updateUI === "function") updateUI();
                         return; 
                     } else {
-                        alert("エラー: 選択されたカードがデッキにありません。");
+                        customAlert("エラー: 選択されたカードがデッキにありません。");
                         return;
                     }
                 }
 
                 // 通常時のクリック処理（詳細表示など）
-                alert(`「${master.name}」は現在デッキに ${currentDeck[id]} 枚編成されています。`);
+                customAlert(`「${master.name}」は現在デッキに ${currentDeck[id]} 枚編成されています。`);
             };
 
             rewardArea.appendChild(div);
@@ -1038,6 +1060,6 @@ function clearCurrentDeckSlot() {
         // 第2引数に true を渡して、初期カードの自動補充をブロックしながら再描画
         changeSlot(slot, true);
         
-        alert(`スロット ${slot + 1} を完全に空（0枚）にしました。`);
+        customAlert(`スロット ${slot + 1} を完全に空（0枚）にしました。`);
     }
 }

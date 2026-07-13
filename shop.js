@@ -47,7 +47,7 @@ function createCardNode(card, container, isOnSale = false) {
     
     div.onclick = function(){
         if(!isShopActive) return;
-        if(player.gold < price) { alert("ゴールドが足りません！"); return; }
+        if(player.gold < price) { customAlert("ゴールドが足りません！"); return; }
         
         player.gold -= price;
         const currentSlot = window.currentSlot || 0;
@@ -89,7 +89,7 @@ function createFieldNode(field, container, isOnSale = false) {
     
     div.onclick = function(){
         if(!isShopActive) return;
-        if(player.gold < price) { alert("ゴールドが足りません！"); return; }
+        if(player.gold < price) { customAlert("ゴールドが足りません！"); return; }
         
         player.gold -= price;
         if(field.id === "atk_up") player.fields.atk_up++;
@@ -100,7 +100,7 @@ function createFieldNode(field, container, isOnSale = false) {
 	    const bossNameMap = { dragon: "ドラゴン 🐉", magica: "マギカ 🔮", boost: "ブースト 🪓" };
             const b20Name = bossNameMap[window.boss20] || window.boss20 || "不明";
             const b40Name = bossNameMap[window.boss40] || window.boss40 || "不明";
-            alert(`👁️ 【ボス偵察】\n\n20階ボス: ${b20Name}\n40階ボス: ${b40Name}`);
+            customAlert(`👁️ 【ボス偵察】\n\n20階ボス: ${b20Name}\n40階ボス: ${b40Name}`);
         }
 
         
@@ -152,11 +152,11 @@ function createPotionNode(potionType, container, isOnSale = false) {
             const confirmChange = confirm(`🎒 「${currentPotionName}」から「${pName}」へ変更しますか？`);
             if (!confirmChange) return; // キャンセルされたら処理を中断
         }
-        if(player.gold < price) { alert("ゴールドが足りません！"); return; }
+        if(player.gold < price) { customAlert("ゴールドが足りません！"); return; }
         
         player.gold -= price;
         window.playerPotion = potionType;
-        alert(`${pName} を購入しました！`);
+        customAlert(`${pName} を購入しました！`);
         
         shopSelectionCount--;
         const rewardTitle = document.getElementById("rewardTitle");
@@ -206,7 +206,7 @@ function createDarkCardNode(card, container, isOnSale = false) {
     }
     
     div.onclick = function(){
-        if(player.gold < price) { alert("ゴールドが足りません！"); return; }
+        if(player.gold < price) { customAlert("ゴールドが足りません！"); return; }
         player.gold -= price;
 
         const currentSlot = window.currentSlot || 0;
@@ -246,7 +246,7 @@ function createDarkFieldNode(field, container, isOnSale = false) {
     }
     
     div.onclick = function(){
-        if(player.gold < price) { alert("ゴールドが足りません！"); return; }
+        if(player.gold < price) { customAlert("ゴールドが足りません！"); return; }
         player.gold -= price;
         
         if(field.id === "atk_up") player.fields.atk_up++;
@@ -257,7 +257,7 @@ function createDarkFieldNode(field, container, isOnSale = false) {
 	    const bossNameMap = { dragon: "ドラゴン 🐉", magica: "マギカ 🔮", boost: "ブースト 🪓" };
             const b20Name = bossNameMap[window.boss20] || window.boss20 || "不明";
             const b40Name = bossNameMap[window.boss40] || window.boss40 || "不明";
-            alert(`👁️ 【ボス偵察】\n\n20階ボス: ${b20Name}\n40階ボス: ${b40Name}`);
+            customAlert(`👁️ 【ボス偵察】\n\n20階ボス: ${b20Name}\n40階ボス: ${b40Name}`);
         }
         
         const rewardTitle = document.getElementById("rewardTitle");
@@ -293,11 +293,11 @@ function createDarkPotionNode(potionType, container, isOnSale = false) {
             const confirmChange = confirm(`🎒 「${currentPotionName}」から「${pName}」へ変更しますか？`);
             if (!confirmChange) return; // キャンセルされたら処理を中断
         }
-        if(player.gold < price) { alert("ゴールドが足りません！"); return; }
+        if(player.gold < price) { customAlert("ゴールドが足りません！"); return; }
         
         player.gold -= price;
         window.playerPotion = potionType;
-        alert(`${pName} を購入しました！`);
+        customAlert(`${pName} を購入しました！`);
         
         const rewardTitle = document.getElementById("rewardTitle");
         if(rewardTitle) rewardTitle.innerText = `🌌 闇市（購入制限なし・戻るボタンで退店） | 💰所持: ${player.gold}G`;
@@ -416,7 +416,7 @@ function triggerDarkMarket() {
     
     if (typeof updateUI === 'function') updateUI(); 
     
-    alert(`🌌 闇市に足を踏み入れた… 代償として最大HPが-10された！\n(現在HP: ${player.hp} / ${player.maxHp})`);
+    customAlert(`🌌 闇市に足を踏み入れた… 代償として最大HPが-10された！\n(現在HP: ${player.hp} / ${player.maxHp})`);
 
     const rewardTitle = document.getElementById("rewardTitle");
     if(rewardTitle) rewardTitle.innerText = `🌌 闇市（購入制限なし・戻るボタンで退店） | 💰所持: ${player.gold}G`;
@@ -550,17 +550,17 @@ function checkShopDeckOverflowAndLeave() {
 
 function buyPotion(potionType) {
     if (player.gold < 150) {
-        alert("💰 ゴールドが足りません！(価格: 150G)");
+        customAlert("💰 ゴールドが足りません！(価格: 150G)");
         return false;
     }
     if (window.playerPotion !== null) {
-        alert("ポーションスロットが一杯です！(最大1つ)");
+        customAlert("ポーションスロットが一杯です！(最大1つ)");
         return false;
     }
 
     player.gold -= 150;
     window.playerPotion = potionType;
-    alert(`${getPotionName(potionType)} を購入しました！`);
+    customAlert(`${getPotionName(potionType)} を購入しました！`);
     if (typeof updateUI === 'function') updateUI();
     return true;
 }
