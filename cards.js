@@ -316,8 +316,8 @@ const allCardsMaster = [
 
 
 // type: "predictEnemy" -> id順
-{ id: 1512, name: "攻撃予知", cost: 2, desc: "敵の型がわかる(1T)", type: "predictEnemy", turn: 1, rarity: "uncommon", cat: "oth", isInitial: true },
-{ id: 2512, name: "攻撃予知", cost: 3, desc: "敵の型がわかる(2T)", type: "predictEnemy", turn: 2, rarity: "rare", cat: "oth", isInitial: true },
+{ id: 1512, name: "攻撃予知", cost: 2, desc: "敵の型がわかる(1T)", type: "predictEnemy", turn: 1, rarity: "uncommon", cat: "oth", isInitial: false },
+{ id: 2512, name: "攻撃予知", cost: 3, desc: "敵の型がわかる(2T)", type: "predictEnemy", turn: 2, rarity: "rare", cat: "oth", isInitial: false },
 
 // type: "purifyCurse" -> id順
 { id: 1513, name: "呪い削除", cost: 1, desc: "デッキの呪いをすべて除去、その後このカードも除去する", type: "purifyCurse", rarity: "uncommon", cat: "oth", isInitial: false },
