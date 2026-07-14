@@ -87,6 +87,15 @@ const adrenalineBonus = player.status.adrenalineAtk || 0;
     if (card.type === "pierceAttack") {
 	card.value=card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
         damageEnemy(card.value, true); // ignoreBlock=true で防御を無視
+
+        // 🗿 Golemは防御を無視されると反撃してくる
+        if (enemy.data && enemy.data.name === "Golem") {
+            const counterDmg = 6;
+            player.hp = Math.max(0, player.hp - counterDmg);
+            if (typeof createDamagePopup === 'function') createDamagePopup(counterDmg, false);
+            customAlert(`🗿 Golemの反撃！防御を無視された怒りでプレイヤーに ${counterDmg} ダメージ！`);
+            if (player.hp <= 0) gameover();
+        }
     }
 
 //HP〇消費して〇ダメージ
@@ -443,11 +452,16 @@ if (card.type === "camouflage") {
 if (card.type === "predictEnemy") {
         enemy.status.predictTurns = card.turn || 1;
 
-        const predictedKey = enemy.nextStyleKey || "balance";
-        const predictedInfo = window.aiStyles ? window.aiStyles[predictedKey] : null;
-        const predictedName = predictedInfo ? predictedInfo.name : "バランスを重視している";
+        // Clownは通常の行動スタイル（超攻撃特化など）を使わないため、予知結果は表示しない
+        const isClown = enemy.data && enemy.data.name === "Clown";
 
-        customAlert(`🔮 攻撃予知！敵は「${predictedName}」`);
+        if (!isClown) {
+            const predictedKey = enemy.nextStyleKey || "balance";
+            const predictedInfo = window.aiStyles ? window.aiStyles[predictedKey] : null;
+            const predictedName = predictedInfo ? predictedInfo.name : "バランスを重視している";
+
+            customAlert(`🔮 攻撃予知！敵は「${predictedName}」`);
+        }
 
         if (typeof updateUI === 'function') updateUI();
     }

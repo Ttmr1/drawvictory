@@ -995,3 +995,130 @@ button:hover:not(:disabled){
 
     font-size:20px;
 }
+
+/* ==========================================
+   📖 説明書：カード図鑑（検索・カテゴリ分け表示）
+========================================== */
+.card-db-toolbar {
+    position: sticky;
+    top: 0;
+    background: #1a1a1a;
+    padding-bottom: 10px;
+    z-index: 5;
+}
+.card-db-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border-radius: 6px;
+    border: 1px solid #444;
+    background: #111;
+    color: #fff;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+.card-db-search:focus {
+    outline: none;
+    border-color: #e43f5a;
+}
+.card-db-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 11px;
+}
+.card-db-legend span {
+    padding: 3px 9px;
+    border-radius: 10px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+}
+.card-db-empty {
+    text-align: center;
+    color: #888;
+    font-size: 13px;
+    padding: 20px 0;
+}
+.card-db-section {
+    margin-bottom: 10px;
+}
+.card-db-header {
+    cursor: pointer;
+    padding: 9px 12px;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 4px;
+    border-left: 4px solid #888;
+    background: rgba(255,255,255,0.05);
+}
+.card-db-header .arrow {
+    font-size: 11px;
+    color: #999;
+}
+.card-db-grid {
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 8px;
+    padding: 10px 4px;
+}
+.manual-card {
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    border: 2px solid #555;
+    color: #eee;
+}
+.manual-card.cat-atk  { background: linear-gradient(135deg, #4a1515, #2c0b0b); }
+.manual-card.cat-blk  { background: linear-gradient(135deg, #15305b, #0b1a33); }
+.manual-card.cat-rec  { background: linear-gradient(135deg, #184a23, #0d2c14); }
+.manual-card.cat-abn  { background: linear-gradient(135deg, #3d144c, #210a2b); }
+.manual-card.cat-oth  { background: linear-gradient(135deg, #333333, #1f1f1f); }
+.manual-card.cat-none { background: linear-gradient(135deg, #222222, #111111); }
+
+.manual-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.manual-card-name {
+    font-size: 12px;
+    font-weight: bold;
+}
+.manual-card-cost {
+    flex-shrink: 0;
+    margin-left: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 1px 7px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.45);
+}
+.manual-card-desc {
+    font-size: 10.5px;
+    color: #ddd;
+    line-height: 1.4;
+    min-height: 26px;
+}
+.manual-card-rarity {
+    font-size: 9px;
+    text-align: right;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+.manual-card.rarity-common   .manual-card-rarity { color: #ccc; }
+.manual-card.rarity-uncommon .manual-card-rarity { color: #4caf50; }
+.manual-card.rarity-rare     .manual-card-rarity { color: #00d2ff; }
+.manual-card.rarity-legend   .manual-card-rarity { color: #ffd700; }
+.manual-card.rarity-space    .manual-card-rarity { color: #bf55ec; }
+.manual-card.rarity-none     .manual-card-rarity { color: #777; }
+
+.manual-card.rarity-uncommon { box-shadow: 0 0 6px rgba(76,175,80,0.5); }
+.manual-card.rarity-rare     { box-shadow: 0 0 6px rgba(0,210,255,0.6); }
+.manual-card.rarity-legend   { box-shadow: 0 0 6px rgba(255,215,0,0.6); }
+.manual-card.rarity-space    { box-shadow: 0 0 6px rgba(191,85,236,0.6); }

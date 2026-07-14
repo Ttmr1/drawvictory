@@ -71,7 +71,7 @@ window.alert = function(message) {
     // アラート要素の作成
     const alertDiv = document.createElement("div");
     alertDiv.className = "custom-alert";
-    alertDiv.innerText = message;
+    alertDiv.textContent = message; // innerTextはDOM未接続の要素では反映されないことがあるためtextContentを使用
 
     // クリックされたらすぐ消せるようにする
     alertDiv.onclick = function() {
@@ -198,7 +198,7 @@ function processCustomAlertQueue() {
 
         const item = document.createElement("div");
         item.className = "custom-alert-modal-item";
-        item.innerText = message;
+        item.textContent = message; // innerTextはDOM未接続の要素では反映されないことがあるためtextContentを使用
         item.onclick = () => removeCustomAlertItem(item);
 
         modal.appendChild(item);
@@ -700,9 +700,8 @@ function switchMenuTab(tabName) {
         <p>・状態異常系 :状態攻撃。   紫色のカード。</p>
         <p>・特殊系   :サポート。   灰色のカード。</p>
         <br>
-	<h2>🃏 カード一覧</h2><ul>`;
-        allCardsMaster.forEach(c => { html += `<li><strong>${c.name}</strong> (コスト:${c.cost}) - ${c.desc}</li>`; });
-        html += `</ul>`;
+	<h2>🃏 カード一覧</h2>
+        ` + renderCardDatabase();
     } 
     
     if (tabName === 'battle') {
@@ -770,4 +769,106 @@ function switchMenuTab(tabName) {
     }
 
     contentDiv.innerHTML = html;
+}
+
+// 📖 カード図鑑：カテゴリごとに折りたたみ表示し、検索できるカード一覧を生成する
+const CARD_DB_CATEGORIES = [
+    { key: "atk",  label: "⚔️ 攻撃系",   color: "#ff6b6b" },
+    { key: "blk",  label: "🛡️ 防御系",   color: "#4fa8ff" },
+    { key: "rec",  label: "💖 回復系",   color: "#5fd97a" },
+    { key: "abn",  label: "☠️ 状態異常系", color: "#c86bff" },
+    { key: "oth",  label: "✨ 特殊系",   color: "#bbbbbb" },
+    { key: "none", label: "👻 呪いカード", color: "#888888" }
+];
+const CARD_DB_RARITY_LABEL = { common: "コモン", uncommon: "アンコモン", rare: "レア", legend: "レジェンド", space: "スペース", none: "-" };
+const CARD_DB_COST_COLOR = { 0:"#ffffff",1:"#ffeb3b",2:"#00e676",3:"#29b6f6",4:"#ff5252",5:"#e040fb",6:"#ff9100",7:"#00e5ff",8:"#ff1744",9:"#aa00ff" };
+
+
+function renderCardDatabase() {
+    let html = `
+      <div class="card-db-toolbar">
+        <input id="cardDbSearchInput" class="card-db-search" type="text"
+               placeholder="🔍 カード名・説明で検索..."
+               oninput="filterCardDatabase(this.value)">
+        <div class="card-db-legend">
+          ${CARD_DB_CATEGORIES.map(c => `<span style="color:${c.color};">${c.label}</span>`).join('')}
+        </div>
+      </div>
+      <div id="cardDbList">`;
+
+    CARD_DB_CATEGORIES.forEach(catDef => {
+        const cardsInCat = allCardsMaster
+            .filter(c => c.cat === catDef.key)
+            .sort((a, b) => {
+                const aLast2 = a.id % 100;
+                const bLast2 = b.id % 100;
+                if (aLast2 !== bLast2) return aLast2 - bLast2;
+                const aTier = Math.floor(a.id / 1000); // idの1000の位（0=common,1=uncommon,2=rare,3=legend,4=space）
+                const bTier = Math.floor(b.id / 1000);
+                return aTier - bTier;
+            });
+
+        if (cardsInCat.length === 0) return;
+
+        html += `
+          <div class="card-db-section" data-cat="${catDef.key}">
+            <div class="card-db-header" style="border-left-color:${catDef.color};"
+                 onclick="const g=this.nextElementSibling; const open = g.style.display==='grid'; g.style.display = open ? 'none' : 'grid'; this.querySelector('.arrow').textContent = open ? '▼' : '▲';">
+                <span>${catDef.label}（${cardsInCat.length}枚）</span>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="card-db-grid">
+              ${cardsInCat.map(c => {
+                  const costColor = CARD_DB_COST_COLOR[c.cost] || "#eeeeee";
+                  const rarityLabel = CARD_DB_RARITY_LABEL[c.rarity] || c.rarity;
+                  const searchKey = (c.name + " " + (c.desc || "")).toLowerCase();
+                  return `
+                    <div class="manual-card cat-${c.cat} rarity-${c.rarity}" data-search="${searchKey}">
+                        <div class="manual-card-top">
+                            <span class="manual-card-name">${c.name}</span>
+                            <span class="manual-card-cost" style="color:${costColor}; border:1px solid ${costColor};">⚡${c.cost}</span>
+                        </div>
+                        <div class="manual-card-desc">${c.desc || "（説明なし）"}</div>
+                        <div class="manual-card-rarity">${rarityLabel}</div>
+                    </div>`;
+              }).join('')}
+            </div>
+          </div>`;
+    });
+
+    html += `</div><p id="cardDbEmptyMsg" class="card-db-empty" style="display:none;">該当するカードが見つかりません。</p>`;
+    return html;
+}
+
+// カード図鑑の検索フィルタ：一致するカードだけ表示し、該当があるカテゴリは自動で展開する
+function filterCardDatabase(value) {
+    const q = (value || "").trim().toLowerCase();
+    const sections = document.querySelectorAll('.card-db-section');
+    let totalVisible = 0;
+
+    sections.forEach(section => {
+        const grid = section.querySelector('.card-db-grid');
+        const header = section.querySelector('.card-db-header');
+        let visibleInSection = 0;
+
+        section.querySelectorAll('.manual-card').forEach(card => {
+            const match = !q || card.dataset.search.includes(q);
+            card.style.display = match ? "" : "none";
+            if (match) visibleInSection++;
+        });
+
+        totalVisible += visibleInSection;
+        section.style.display = visibleInSection > 0 ? "" : "none";
+
+        if (grid && header) {
+            if (q) {
+                // 検索中はヒットしたカテゴリを自動で開く
+                grid.style.display = visibleInSection > 0 ? "grid" : "none";
+                header.querySelector('.arrow').textContent = visibleInSection > 0 ? "▲" : "▼";
+            }
+        }
+    });
+
+    const emptyMsg = document.getElementById("cardDbEmptyMsg");
+    if (emptyMsg) emptyMsg.style.display = (q && totalVisible === 0) ? "block" : "none";
 }

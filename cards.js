@@ -159,13 +159,13 @@ const allCardsMaster = [
 { id: 2202, name: "13ブロック", cost: 2, desc: "", type: "block", value: 13, rarity: "rare", cat: "blk", isInitial: false },
 { id: 2203, name: "17ブロック", cost: 3, desc: "", type: "block", value: 17, rarity: "rare", cat: "blk", isInitial: false },
 
-{ id: 3201, name: "15ブロック", cost: 2, desc: "", type: "block", value: 15, rarity: "legend", cat: "blk", isInitial: false },
-{ id: 3202, name: "19ブロック", cost: 3, desc: "", type: "block", value: 19, rarity: "legend", cat: "blk", isInitial: false },
-{ id: 3203, name: "23ブロック", cost: 4, desc: "", type: "block", value: 23, rarity: "legend", cat: "blk", isInitial: false },
+{ id: 3201, name: "14ブロック", cost: 2, desc: "", type: "block", value: 14, rarity: "legend", cat: "blk", isInitial: false },
+{ id: 3202, name: "18ブロック", cost: 3, desc: "", type: "block", value: 18, rarity: "legend", cat: "blk", isInitial: false },
+{ id: 3203, name: "22ブロック", cost: 4, desc: "", type: "block", value: 22, rarity: "legend", cat: "blk", isInitial: false },
 
-{ id: 4201, name: "22ブロック", cost: 3, desc: "", type: "block", value: 22, rarity: "space", cat: "blk", isInitial: false },
-{ id: 4202, name: "26ブロック", cost: 4, desc: "", type: "block", value: 26, rarity: "space", cat: "blk", isInitial: false },
-{ id: 4203, name: "30ブロック", cost: 5, desc: "", type: "block", value: 30, rarity: "space", cat: "blk", isInitial: false },
+{ id: 4201, name: "19ブロック", cost: 3, desc: "", type: "block", value: 19, rarity: "space", cat: "blk", isInitial: false },
+{ id: 4202, name: "23ブロック", cost: 4, desc: "", type: "block", value: 23, rarity: "space", cat: "blk", isInitial: false },
+{ id: 4203, name: "27ブロック", cost: 5, desc: "", type: "block", value: 27, rarity: "space", cat: "blk", isInitial: false },
 
 // type: "curseWall" -> id順
 { id: 1204, name: "呪いの枚数×8ブロック", cost: 1, desc: "手札にある呪いカードの枚数×8のブロック。", type: "curseWall", value: 8, rarity: "uncommon", cat: "blk", isInitial: false },
@@ -674,16 +674,14 @@ const currentDeck = (window.savedDecks && window.savedDecks[currentSlot]) || {};
             div.style.position = "relative";
 
             let noticeText = "";
-            if (card.id == 501) {
-                noticeText = `<br><span style="color:#ffae42;">[最大1枚]</span>`;
-            }
+
             
             // カードの見た目と、枚数調整用の「-」「+」ボタンをカード内部に配置
             div.innerHTML = `
-                <h3>${card.name}</h3>
-                <p>Cost: ${card.cost}</p>
-                <p style="font-size:12px; min-height:36px;">${card.desc}${noticeText}</p>
-                <div class="builder-item-ctrl" style="margin-top:10px; display:flex; justify-content:center; align-items:center; gap:10px;">
+                <p style="font-size:15px; min-height:20px;">${card.name}</p>
+                <p style="font-size:13px; min-height:20px;">Cost: ${card.cost}</p>
+                <p style="font-size:12px; min-height:20px;">${card.desc}${noticeText}</p>
+                <div class="builder-item-ctrl" style="margin-top:5px; display:flex; justify-content:center; align-items:center; gap:10px;">
                     <button onclick="adjustBuilderCard(${card.id}, -1)" style="padding:2px 8px; cursor:pointer;">-</button>
                     <span class="count" style="font-weight:bold; color:gold; font-size:16px; min-width:20px; text-align:center;">${count}</span>
                     <button onclick="adjustBuilderCard(${card.id}, 1)" style="padding:2px 8px; cursor:pointer;">+</button>

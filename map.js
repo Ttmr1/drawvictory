@@ -984,7 +984,7 @@ if (isOrcBerserk) {
         const targetLabel = targetLabels[targetStyle] || targetStyle;
         statusText += `行動制御:${targetLabel}→バランス(${enemy.status.camouflageTurns}T)<br>`;
     }
-    if(enemy.status.predictTurns > 0) {
+    if(enemy.status.predictTurns > 0 && !(enemy.data && enemy.data.name === "Clown")) {
         const predictedKey = enemy.nextStyleKey || "balance";
         const predictedInfo = window.aiStyles ? window.aiStyles[predictedKey] : null;
         const predictedName = predictedInfo ? predictedInfo.name : "バランスを重視している";

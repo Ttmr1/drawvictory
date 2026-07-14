@@ -27,7 +27,7 @@ const enemyTypes = {
     greedy:   { name:"Greedy",    icon:"🦹", hpRate:0.75, atkRate:1.00, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     trait:    { name:"Trait",     icon:"👽", hpRate:0.80, atkRate:0.80, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     bastion:  { name:"Bastion",   icon:"💠", hpRate:1.00, atkRate:0.85, blockRate:1.50, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
-    fate:     { name:"Fate",      icon:"✨", hpRate:1.10, atkRate:0.59, blockRate:0.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
+    fate:     { name:"Fate",      icon:"✨", hpRate:1.10, atkRate:0.75, blockRate:0.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
 
 
 //ボス
@@ -74,7 +74,7 @@ function initEnemyStatus() {
 
     
     const baseHp  = 20 + floor * 7.31; 
-    const baseAtk =  3 + floor * 1.21;  
+    const baseAtk =  3 + floor * 1.11;  
     
     let diffRateHp  = 1.0;
     let diffRateAtk = 1.0;
