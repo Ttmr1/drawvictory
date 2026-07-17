@@ -301,6 +301,20 @@ const allCardsMaster = [
 { id: 1507, name: "ループ", cost: 3, desc: "ループ状態を付与", type: "timeLoop", rarity: "uncommon", cat: "abn", isInitial: false },
 { id: 2507, name: "ループ", cost: 2, desc: "ループ状態を付与", type: "timeLoop", rarity: "rare", cat: "abn", isInitial: false },
 
+// type: "absoluteZero" -> id順
+{ id: 1412, name: "絶対零度", cost: 3, desc: "敵が凍結状態なら、凍結を解除し攻撃力を50%にする(1ターン)。凍結状態でなければ効果なし", type: "absoluteZero", turn: 1, rarity: "uncommon", cat: "abn", isInitial: false },
+
+// type: "buffMeditation" -> id順
+{ id: 1415, name: "瞑想", cost: 1, desc: "瞑想状態を付与する(2ターン)", type: "buffMeditation", turn: 2, rarity: "uncommon", cat: "abn", isInitial: false },
+
+// type: "grantAbsoluteZero" -> id順
+{ id: 1413, name: "絶対零度付与", cost: 2, desc: "絶対零度状態を付与する(1ターン)", type: "grantAbsoluteZero", turn: 1, rarity: "uncommon", cat: "abn", isInitial: false },
+{ id: 2413, name: "絶対零度付与", cost: 4, desc: "絶対零度状態を付与する(1ターン、50%の確率で2ターンになる)", type: "grantAbsoluteZero", turn: 1, bonusChance: 0.5, bonusTurn: 2, rarity: "rare", cat: "abn", isInitial: false },
+
+// type: "freezeThenAbsoluteZero" -> id順
+{ id: 1414, name: "凍結&絶対零度", cost: 5, desc: "敵を凍結状態にしてから絶対零度状態を付与する(1ターン)", type: "freezeThenAbsoluteZero", freezeTurn: 1, turn: 1, rarity: "uncommon", cat: "abn", isInitial: false },
+{ id: 2414, name: "凍結&絶対零度", cost: 7, desc: "敵を凍結状態にしてから絶対零度状態を付与する(1ターン、50%の確率で2ターンになる)", type: "freezeThenAbsoluteZero", freezeTurn: 1, turn: 1, bonusChance: 0.5, bonusTurn: 2, rarity: "rare", cat: "abn", isInitial: false },
+
 // type: "camouflage" -> id順
 { id: 1508, name: "超攻撃型をバランス型", cost: 4, desc: "敵の「超攻撃型」を「バランス型」にする(2T)", type: "camouflage", duration: 2, rarity: "uncommon", cat: "oth", isInitial: false },
 { id: 2508, name: "超攻撃型をバランス型", cost: 4, desc: "敵の「超攻撃型」を「バランス型」にする(3T)", type: "camouflage", duration: 3, rarity: "uncommon", cat: "oth", isInitial: false },
@@ -322,6 +336,13 @@ const allCardsMaster = [
 // type: "purifyCurse" -> id順
 { id: 1513, name: "呪い削除", cost: 1, desc: "デッキの呪いをすべて除去、その後このカードも除去する", type: "purifyCurse", rarity: "uncommon", cat: "oth", isInitial: false },
 
+// type: "nextTurnEnergy" -> id順
+{ id: 1514, name: "エネルギー予約", cost: 2, desc: "次ターンにエネルギーを+2する", type: "nextTurnEnergy", value: 2, rarity: "uncommon", cat: "oth", isInitial: false },
+{ id: 2514, name: "エネルギー予約", cost: 2, desc: "次ターンにエネルギーを+2する。さらに50%で+1", type: "nextTurnEnergy", value: 2,plusValue:1 rarity: "uncommon", cat: "oth", isInitial: false },
+
+// type: "firstCardDraw" -> id順
+{ id: 1515, name: "幸先の一手", cost: 1, desc: "1ターン目に最初に使用すればカードを3枚引く", type: "firstCardDraw", value: 3, rarity: "uncommon", cat: "oth", isInitial: false },
+{ id: 2515, name: "幸先の一手", cost: 0, desc: "1ターン目に最初に使用すればカードを3枚引く", type: "firstCardDraw", value: 3, rarity: "uncommon", cat: "oth", isInitial: false },
 
 
 // ==========================================
@@ -721,14 +742,6 @@ function adjustBuilderCard(cardId, amount) {
     renderBuilder();
 }
 
-
-function getGroupName(groupKey) {
-    if (groupKey === "atk") return "攻撃";
-    if (groupKey === "blk") return "防御";
-    if (groupKey === "rec") return "回復";
-    if (groupKey === "abn") return "状態異常";
-    return "特殊";
-}
 
 function checkValidation() {
     const currentDeck = savedDecks[currentSlot] || {};

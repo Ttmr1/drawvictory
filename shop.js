@@ -137,6 +137,8 @@ function createPotionNode(potionType, container, isOnSale = false) {
         pDesc = "山札からカードを 3 枚引く。";
     } else if (potionType === "acid") {
 	pDesc = "相手のブロックを 0 にして 毒5 を付与"
+    } else if (potionType === "vessel") {
+        pDesc = "2回飲むとポーションスロットが1つ増える。";
     }
     
     if (isOnSale) {
@@ -147,15 +149,16 @@ function createPotionNode(potionType, container, isOnSale = false) {
 
     div.onclick = function(){
         if(!isShopActive) return;
-	if (window.playerPotion !== null) {
-            const currentPotionName = (typeof getPotionName === 'function') ? getPotionName(window.playerPotion) : window.playerPotion + " Potion";
-            const confirmChange = confirm(`🎒 「${currentPotionName}」から「${pName}」へ変更しますか？`);
-            if (!confirmChange) return; // キャンセルされたら処理を中断
+        window.playerPotions = window.playerPotions || [];
+        window.maxPotionSlots = window.maxPotionSlots || 1;
+        if (window.playerPotions.length >= window.maxPotionSlots) {
+            customAlert(`🎒 ポーションスロットが満杯です！（最大${window.maxPotionSlots}個）`);
+            return;
         }
         if(player.gold < price) { customAlert("ゴールドが足りません！"); return; }
         
         player.gold -= price;
-        window.playerPotion = potionType;
+        window.playerPotions.push(potionType);
         customAlert(`${pName} を購入しました！`);
         
         shopSelectionCount--;
@@ -288,15 +291,16 @@ function createDarkPotionNode(potionType, container, isOnSale = false) {
     }
     
     div.onclick = function(){
-        if (window.playerPotion !== null) {
-            const currentPotionName = (typeof getPotionName === 'function') ? getPotionName(window.playerPotion) : window.playerPotion + " Potion";
-            const confirmChange = confirm(`🎒 「${currentPotionName}」から「${pName}」へ変更しますか？`);
-            if (!confirmChange) return; // キャンセルされたら処理を中断
+        window.playerPotions = window.playerPotions || [];
+        window.maxPotionSlots = window.maxPotionSlots || 1;
+        if (window.playerPotions.length >= window.maxPotionSlots) {
+            customAlert(`🎒 ポーションスロットが満杯です！（最大${window.maxPotionSlots}個）`);
+            return;
         }
         if(player.gold < price) { customAlert("ゴールドが足りません！"); return; }
         
         player.gold -= price;
-        window.playerPotion = potionType;
+        window.playerPotions.push(potionType);
         customAlert(`${pName} を購入しました！`);
         
         const rewardTitle = document.getElementById("rewardTitle");
@@ -366,7 +370,8 @@ function openShopMenu(){
         const isThisItemOnSale = (i === 0 && isSaleActive);
 
         if (selectedType === "potion") {
-            const potionTypes = ["heal", "energy", "block", "draw","acid"];
+            const potionTypes = ["heal", "energy", "block", "draw","acid"]
+                .concat((window.vesselDrinkCount || 0) < 2 ? ["vessel"] : []);
             let availablePotions = potionTypes.filter(p => !displayedPotions.includes(p));
             if (availablePotions.length === 0) availablePotions = potionTypes;
             
@@ -411,8 +416,9 @@ function triggerDarkMarket() {
     isShopActive = true;
 
     player.darkMarketCount = (player.darkMarketCount || 0) + 1;
-    player.maxHp = 70 + (floor - 1) * 5 - (player.darkMarketCount * 10);
+    player.maxHp -= 10;
     if (player.maxHp < 1) player.maxHp = 1; 
+    if (player.hp > player.maxHp) player.hp = player.maxHp;
     
     if (typeof updateUI === 'function') updateUI(); 
     
@@ -483,7 +489,8 @@ function triggerDarkMarket() {
         const isThisItemOnSale = false;
 
         if (selectedType === "potion") {
-            const potionTypes = ["heal", "energy", "block", "draw","acid"];
+            const potionTypes = ["heal", "energy", "block", "draw","acid"]
+                .concat((window.vesselDrinkCount || 0) < 2 ? ["vessel"] : []);
             let availablePotions = potionTypes.filter(p => !displayedPotions.includes(p));
             if (availablePotions.length === 0) availablePotions = potionTypes;
             
@@ -546,21 +553,4 @@ function checkShopDeckOverflowAndLeave() {
     } else {
         if(typeof openMap === 'function') openMap();
     }
-}
-
-function buyPotion(potionType) {
-    if (player.gold < 150) {
-        customAlert("💰 ゴールドが足りません！(価格: 150G)");
-        return false;
-    }
-    if (window.playerPotion !== null) {
-        customAlert("ポーションスロットが一杯です！(最大1つ)");
-        return false;
-    }
-
-    player.gold -= 150;
-    window.playerPotion = potionType;
-    customAlert(`${getPotionName(potionType)} を購入しました！`);
-    if (typeof updateUI === 'function') updateUI();
-    return true;
 }

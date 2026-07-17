@@ -145,13 +145,6 @@ function closeMenuPopup() {
 }
 
 /**
- * 💡 ラベルの数字をリアルタイム更新
- */
-function updateAlertTimeLabel(val) {
-    document.getElementById("alertTimeVal").innerText = val;
-}
-
-/**
  * 💡 設定を保存し、テストアラートを表示
  */
 function saveAndTestAlert() {
@@ -316,6 +309,20 @@ function switchMenuTab(tabName) {
 	        <p>カードの削除と強化のバランスがデッキの強化につながります。</p>
 		</div>
             </div>
+
+
+            <div class="rule-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="const detail = this.nextElementSibling; const isOpen = detail.style.display === 'block'; detail.style.display = isOpen ? 'none' : 'block'; this.classList.toggle('active'); if(!isOpen) { setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50); }" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>🎴カードのレアリティ</span>
+                </div>
+                <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    レアリテはcommon、uncommon、<span style="color: lightblue;">rare</span>、<span style="color: yellow;">legend</span>、<span style="color: purple;">space</span>があります。</p>
+		<p>カードを強化することでレアリティを1段階挙げることが出来ます。</p>
+		<p>commonまたはuncommonは<span style="color: lightblue;">rare</span>に、<span style="color: lightblue;">rare</span>は<span style="color: yellow;">legend</span>に、<span style="color: yellow;">legend</span>は<span style="color: purple;">space</span>に強化できますが、すべてのカードが<span style="color: purple;">space</span>まで強化できるとは限りません。</p>
+		</div>
+            </div>
+
+
 
         </div>
         `;
@@ -640,6 +647,45 @@ function switchMenuTab(tabName) {
                 </div>
             </div>
 
+            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>Timer ⏰</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <strong style="color: #00adb5;">【カード効果を1ターン遅延】</strong>
+                        <span style="color: gold;">200G</span>
+                    </div>
+                </div>
+                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    プレイヤーの「攻撃系・回復系・状態異常系・防御系」カードの効果を1ターン遅らせる（ダメージや状態異常は次のターンに発動する）。最初のターンはTimer自身も攻撃してこない。
+                </div>
+            </div>
+
+            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>Gunner 🔫</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <strong style="color: #00adb5;">【完全防御を撃ち抜く】</strong>
+                        <span style="color: gold;">200G</span>
+                    </div>
+                </div>
+                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    プレイヤーの防御で攻撃を完全に防がれた時、ダメージを1.5倍にしてから防御を差し引いて攻撃する。防御を高く積みすぎると逆に大ダメージを受ける。
+                </div>
+            </div>
+
+            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>Void 🌑</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <strong style="color: #00adb5;">【毎ターン過労付与＋手札破壊】</strong>
+                        <span style="color: gold;">200G</span>
+                    </div>
+                </div>
+                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    毎ターン、プレイヤーに「過労」状態を付与し、さらに手札からランダムに2枚を捨て札に送る。
+                </div>
+            </div>
+
 
 
 
@@ -710,7 +756,7 @@ function switchMenuTab(tabName) {
         <p>・ダメージ強化: 物理ダメージ常時 +1 (重複可)</p>
         <p>・防御強化　　: ターン開始時、ブロックを+2 (重複可)</p>
         <p>・ドロー強化　: 毎ターン開始時、1/3の確率で手札+1枚</p>
-        <p>・大火傷　　　: 火傷によるダメージが10に増加</p>
+        <p>・大火傷　　　: 火傷によるダメージが5→10に増加</p>
         <p>・ボス偵察　　: 20階と40階のボスの名前が事前にわかる。プレイヤーのステータス画面に表示される。</p>
         <br>
 	<br>
@@ -721,26 +767,31 @@ function switchMenuTab(tabName) {
         <p>・防御ポーション　　　🛡️: プレイヤーの防御値を 20 増加 させる。</p>
         <p>・ドローポーション　　🎴: 山札から カードを 3 枚引く。</p>
         <p>・強酸ポーション　　　🧪: 敵のブロックを0にして、毒5(5T)を付与する。</p>
+        <p>・器のポーション　　　🏺: 2回飲むとポーションスロットが1つ増える。</p>
 	<br>
 	<br>
         <h2>☠️ 状態異常の種類</h2>
         <h3>状態異常によりダメージを与えるとき<strong>敵の防御を無視して直接HPを減らせます。</strong></h3>
+	<h3>状態異常には重複するもの、上書きするものがあります。重複するものは毒のみです。<h3>
 	<br>
 	<h3>敵に付与する状態異常</h3>
         <p>・毒　　　　☠️: ターン終了時にダメージを与え、毒の値を1減らす（3Tで消滅）。</p>
         <p>・火傷　　　🔥: 相手の防御（ブロック）が半分になり、ターン終了時に固定5ダメージ。</p>
-        <p>・凍結　　　❄️: 敵の攻撃力を66%にする。</p>
+        <p>・凍結　　　❄️: 敵の攻撃力を66%にする。絶対零度状態ならば凍結状態にならない。</p>
+	<p>・絶対零度　🧊: 凍結状態なら絶対零度状態になる。凍結状態を解除して、敵の攻撃力を50%にする。</p>
         <p>・スタン　　💫: 敵のターン開始時、1/4の確率で行動不能になる。</p>
 	<br>
 	<h3>プレイヤーに付与する状態異常</h3>
-        <p>・ヒール　　💖: ターンの終了時に回復する。</p>
-        <p>・ループ　　🔄: カードを使用しても手札に残り続ける。"ループ"カードまたは"コスト 0 "カードは効果なし。</p>
         <p>・未熟　　　🔰: 使用コストを+1する。</p>
+        <p>・過労　　　📉: コストが3以上のカードを使うとき、コストの数-3のダメージをプレイヤーが受ける。</p>
+        <p>・忘却　　　❓: カードの効果がわからなくなる。</p>
         <p>・漏電　　　🔋: プレイヤーのエネルギーが余った数×2ダメージ受ける。</p>
 	<p>・耐電　　　🧤: 漏電状態によるダメージを半分にする。</p>
-        <p>・過労　　　📉: コストが3以上のカードを使うとき、コストの数-3のダメージをプレイヤーが受ける。</p>
+        <p>・ヒール　　💖: ターンの終了時に回復する。</p>
+        <p>・ループ　　🔄: カードを使用しても手札に残り続ける。"ループ"カードまたは"コスト 0 "カードは効果なし。</p>
         <p>・カウンター👊: プレイヤーが受けたダメージを敵にも1.5倍にしてダーメジ与える。</p>
-        <p>・忘却　　　❓: カードの効果がわからなくなる。</p>
+	<p>・瞑想　　　🧘: 「防御系」のカードで得る防御が1.25倍になる。</p>
+	<br>
 	<br>
 	<br>
 	<h2>⛅エリアの種類</h2>

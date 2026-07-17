@@ -121,13 +121,6 @@ const adrenalineBonus = player.status.adrenalineAtk || 0;
         player.block = 0;
     }
 
-//防御値をダメージして防御を半分
-    if (card.type === "blockAttackHalf") {
-	let blockatkhalf=player.block +(card.cat ==="atk" ? comboBonus : 0) + adrenalineBonus;
-        damageEnemy(blockatkhalf);
-        player.block = Math.floor(player.block / 2);
-    }
-
 
 //〇ダメージ、敵が火傷状態なら+〇ダメージ
     if (card.type === "burnplus") {
@@ -369,25 +362,11 @@ while (isHitting && count < 10) {
     }
 
 
-//凍結〇
-    if (card.type === "freezeOnly") {
-        if (!enemy.data.immuneStatus) {
-            enemy.status.freeze = card.status;
-        }
-    }
-
 //凍結〇+〇ダメージ
     if (card.type === "freezeAttack") {
         if (!enemy.data.immuneStatus) {
             enemy.status.freeze = card.status;
 	    damageEnemy(card.value);
-        }
-    }
-
-//スタン
-    if (card.type === "stun") {
-        if (!enemy.data.immuneStatus) {
-            enemy.status.stun = 1;
         }
     }
 
@@ -467,14 +446,86 @@ if (card.type === "predictEnemy") {
     }
 
 
+//絶対零度：敵が凍結中なら凍結を解除し攻撃力を50%にする。凍結中でなければ不発
+if (card.type === "absoluteZero") {
+        if (enemy.status.freeze > 0) {
+            enemy.status.freeze = 0;
+            enemy.status.absoluteZeroTurns = (enemy.status.absoluteZeroTurns || 0) + (card.turn || 1);
+            customAlert("❄️ 絶対零度！敵の凍結を解除し、攻撃力を50%に低下させた！");
+        } else {
+            customAlert("❄️ 絶対零度は敵が凍結状態ではないため不発に終わった…");
+        }
+        if (typeof updateUI === 'function') updateUI();
+    }
 
 
+//瞑想状態を付与する
+if (card.type === "buffMeditation") {
+        player.status.meditation = (player.status.meditation || 0) + (card.turn || 2);
+        customAlert(`🧘 瞑想状態になった！防御系カードの効果が1.25倍になる(${card.turn || 2}T)`);
+        if (typeof updateUI === 'function') updateUI();
+    }
 
 
-// 漏電の残りターンを減少させる（耐電）
-if (card.type === "leakblk") {
+//絶対零度状態を（凍結の有無に関わらず）直接付与する。一定確率で持続ターンが伸びる
+if (card.type === "grantAbsoluteZero") {
+        if (!enemy.data.immuneStatus) {
+            let turns = card.turn || 1;
+            if (card.bonusChance && Math.random() < card.bonusChance) {
+                turns = card.bonusTurn || turns;
+            }
+            enemy.status.absoluteZeroTurns = (enemy.status.absoluteZeroTurns || 0) + turns;
+            customAlert(`❄️ 絶対零度状態を付与した！敵の攻撃力が50%になる(${turns}T)`);
+        } else {
+            customAlert("敵は状態異常無効のため、絶対零度は効果がなかった…");
+        }
+        if (typeof updateUI === 'function') updateUI();
+    }
 
-}
+
+//敵を凍結状態にしてから絶対零度状態を付与する。一定確率で絶対零度の持続ターンが伸びる
+if (card.type === "freezeThenAbsoluteZero") {
+        if (!enemy.data.immuneStatus) {
+            enemy.status.freeze = card.freezeTurn || 1;
+
+            let turns = card.turn || 1;
+            if (card.bonusChance && Math.random() < card.bonusChance) {
+                turns = card.bonusTurn || turns;
+            }
+            enemy.status.absoluteZeroTurns = (enemy.status.absoluteZeroTurns || 0) + turns;
+            customAlert(`❄️ 敵を凍結させ、絶対零度状態を付与した！(${turns}T)`);
+        } else {
+            customAlert("敵は状態異常無効のため、凍結・絶対零度は効果がなかった…");
+        }
+        if (typeof updateUI === 'function') updateUI();
+    }
+
+
+//次ターンにエネルギー+2を予約する
+if (card.type === "nextTurnEnergy") {
+	if(card.plusValue > 0 && Math.random() < 0.5){
+	    card.value = card.value + card.plusValue;
+	}
+        player.status.nextTurnEnergyBonus = (player.status.nextTurnEnergyBonus || 0) + (card.value || 2);
+        customAlert(`⚡ 次のターン、エネルギーが+${card.value || 2}される！`);
+        if (typeof updateUI === 'function') updateUI();
+    }
+
+
+//1ターン目かつこのカードが最初に使用されたカードなら3枚ドローする
+if (card.type === "firstCardDraw") {
+        if (window.battleTurnCount === 1 && window.cardsPlayedThisTurn === 1) {
+            for (let i = 0; i < (card.value || 3); i++) {
+                if (typeof drawOneCard === 'function') drawOneCard();
+            }
+            customAlert(`🃏 幸先の良いスタート！カードを${card.value || 3}枚引いた！`);
+            if (typeof renderHand === 'function') renderHand();
+        } else {
+            customAlert("🃏 1ターン目の最初のカードではないため、効果は発動しなかった…");
+        }
+        if (typeof updateUI === 'function') updateUI();
+    }
+
 
 
     // ----------------
@@ -484,7 +535,12 @@ if (card.type === "leakblk") {
 //防御〇
     if (card.type === "block") {
 	card.value = card.value + (card.cat === "blk" ? comboBonus:0);
-        player.block += card.value;
+        let blockGain = card.value;
+        // 🧘 瞑想：blkカテゴリのカードで得る防御が1.25倍になる
+        if (card.cat === "blk" && player.status && player.status.meditation > 0) {
+            blockGain = Math.round(blockGain * 1.25);
+        }
+        player.block += blockGain;
     }
 
 //回復〇
@@ -530,6 +586,10 @@ if (card.type === "leakblk") {
 if (card.type === "curseWall") {
     let curseCount = window.hand.filter(c => c.cat === "Curse" || c.type === "curse").length;
     let blk = curseCount * 5;
+    // 🧘 瞑想：blkカテゴリのカードで得る防御が1.25倍になる
+    if (card.cat === "blk" && player.status && player.status.meditation > 0) {
+        blk = Math.round(blk * 1.25);
+    }
     player.block += blk;
 }
 

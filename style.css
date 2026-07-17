@@ -71,24 +71,6 @@ body{
     font-weight:bold;
     color:#e43f5a;
 }
-.card-row {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:8px;
-    border-bottom:1px solid rgba(255,255,255,0.1);
-}
-.counter-btn {
-    width:32px;
-    height:32px;
-    padding:0;
-    font-size:18px;
-    border-radius:5px;
-    background:#e43f5a;
-    color:white;
-    border:none;
-    cursor:pointer;
-}
 
 #topInfo{
     position:absolute;
@@ -488,13 +470,6 @@ button:hover:not(:disabled){
     transform: none !important;
     margin: 5px !important;
 }
-.builder-selected-area .card {
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    transform: none !important;
-    margin: 5px !important;
-}
 
 /* ★ マップ画面専用のデッキ確認・廃棄用ボタンのスタイル */
 .map-deck-btn {
@@ -618,23 +593,6 @@ button:hover:not(:disabled){
     border: 2px solid #00adb5;
     background: #222831;
     box-shadow: 0 0 8px rgba(0, 173, 181, 0.5);
-}
-
-/* 丸型の中のポーションボタン（アイコンのみ、背景透明） */
-.potion-circle-btn {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: none;
-    background: transparent; /* 背景を透明にして枠に馴染ませる */
-    font-size: 22px; /* アイコンを大きく見せる */
-    line-height: 1;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    margin: 0;
 }
 
 /* 戦闘中にポーションが使える時のホバーエフェクト */
@@ -763,24 +721,6 @@ button:hover:not(:disabled){
 }
 
 
-/* カード使用時のアニメーションクラス */
-.card-use-animation {
-    animation: fadeOutUp 0.3s ease-out forwards !important;
-    pointer-events: none; /* 連打防止 */
-}
-
-@keyframes fadeOutUp {
-    0% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(-50px) scale(0.9);
-        box-shadow: 0 10px 20px rgba(255, 215, 0, 0.5);
-    }
-}
-
 /* ポップアップテキスト（ダメージ演出用） */
 .damage-popup {
     position: absolute;
@@ -810,72 +750,6 @@ button:hover:not(:disabled){
         transform: scale(1.0) translateY(-50px);
         opacity: 0;
     }
-}
-
-/* メニュー内の小項目ボタンのスタイル */
-.menu-sub-btn {
-    display: block;
-    width: 100%;
-    text-align: left;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #eee;
-    padding: 8px 12px;
-    margin-bottom: 6px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: background 0.2s, color 0.2s;
-}
-.menu-sub-btn:hover {
-    background: rgba(0, 173, 181, 0.3); /* テーマカラーに合わせたホバー */
-    color: #fff;
-}
-
-/* メニュー内アコーディオンの入れ子制御 */
-.menu-accordion-content {
-    width: 100%;
-    box-sizing: border-box;
-    transition: all 0.2s ease;
-}
-
-/* 2〜3階層目の子項目ボタン */
-.menu-sub-btn {
-    display: block;
-    width: 100%;
-    text-align: left;
-    background: rgba(255, 255, 255, 0.07);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #e0e0e0;
-    padding: 8px 12px;
-    margin-top: 4px;
-    margin-bottom: 4px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: background 0.2s, color 0.2s;
-}
-
-.menu-sub-btn:hover {
-    background: rgba(0, 173, 181, 0.3) !important; /* ホバー時にテーマカラーの青緑に光る */
-    color: #fff;
-}
-
-/* 解説文からツリーに戻るボタン */
-.menu-back-btn {
-    background: #e43f5a;
-    color: white;
-    border: none;
-    padding: 7px 14px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
-
-.menu-back-btn:hover {
-    background: #ff4a4a;
 }
 
 /* カスタムアラートの個別スタイル */

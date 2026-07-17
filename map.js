@@ -925,9 +925,13 @@ if (isOrcBerserk) {
     displayAtk = displayAtk * 2;
 }
 
-//凍結状態なら2/3にする。
+//絶対零度状態なら元の攻撃力の1/2にする（凍結との重ね掛けはしない・絶対零度が優先）
+            const isAbsoluteZero = enemy.status && enemy.status.absoluteZeroTurns > 0;
             const isFrozen = enemy.status && enemy.status.freeze > 0;
-            if (isFrozen) {
+            if (isAbsoluteZero) {
+                displayAtk = Math.floor(displayAtk * 1 / 2);
+            } else if (isFrozen) {
+                //凍結状態なら2/3にする。
                 displayAtk = Math.floor(displayAtk * 2 / 3);
             }
 
@@ -977,6 +981,9 @@ if (isOrcBerserk) {
     }
     if(enemy.status.burn > 0) statusText += `🔥火傷:${enemy.status.burn}<br>`;
     if(enemy.status.freeze > 0) statusText += `❄️凍結:${enemy.status.freeze}T<br>`;
+    if(enemy.status.absoluteZeroTurns > 0) {
+        statusText += `❄️絶対零度:${enemy.status.absoluteZeroTurns}T<br>`;
+    }
     if(enemy.status.stun > 0 && enemy.data.name !== "Dragon") statusText += `💫スタン状態<br>`; 
     if(enemy.status.behaviorControlled && enemy.status.camouflageTurns > 0) {
         const targetStyle = enemy.status.camouflageTarget || 'super_attack';
@@ -990,6 +997,7 @@ if (isOrcBerserk) {
         const predictedName = predictedInfo ? predictedInfo.name : "バランスを重視している";
         statusText += `🔮攻撃予知:${predictedName}(${enemy.status.predictTurns}T)<br>`;
     }
+
 
 
     if(enemy.data){
@@ -1064,6 +1072,8 @@ let pStatusText = "";
 
     if(player.status.timeLoop > 0) pStatusText += `🔄 ループ<br>`;
 
+    if(player.status.meditation > 0) pStatusText += `🧘 瞑想:${player.status.meditation}T<br>`;
+
 
 
     if(pStatusText === "") pStatusText = "なし";
@@ -1073,54 +1083,36 @@ let pStatusText = "";
 
 
     // =========================================================================
-    // 🧪 【表示バグ完全修正】CSSデザインクラスと連動するポーション更新処理
+    // 🧪 ポーションスロット表示（複数スロット対応）
     // =========================================================================
     const potionArea = document.getElementById("uiPotionArea");
     if (potionArea) {
-        // ポーションの種類に応じたアイコンとホバー説明の定義
-        let potionIcon = "🎒";
-        let potionDesc = "ポーションを所持していません。";
+        const potionInfo = {
+            heal:   { icon: "❤️‍🩹", desc: "【回復ポーション】\n戦闘中に使用可能。プレイヤーのHPを 15 回復する。" },
+            energy: { icon: "⚡",   desc: "【エネルギーポーション】\n戦闘中に使用可能。このターンのみエネルギーを +2 する。" },
+            block:  { icon: "🛡️",  desc: "【防御ポーション】\n戦闘中に使用可能。即座にブロックを 20 獲得する。" },
+            draw:   { icon: "🎴",  desc: "【ドローポーション】\n戦闘中に使用可能。山札からカードを 3 枚多く引く。" },
+            acid:   { icon: "🧪",  desc: "【強酸ポーション】\n戦闘中に使用可能。敵のブロックを 0 にして、毒5 を付与する。" },
+            vessel: { icon: "🏺",  desc: "【器のポーション】\n2回飲むとポーションスロットが1つ増える。" }
+        };
 
-        if (window.playerPotion === "heal") {
-            potionIcon = "❤️‍🩹";
-            potionDesc = "【回復ポーション】\n戦闘中に使用可能。プレイヤーのHPを 15 回復する。";
-        } else if (window.playerPotion === "energy") {
-            potionIcon = "⚡";
-            potionDesc = "【エネルギーポーション】\n戦闘中に使用可能。このターンのみエネルギーを +2 する。";
-        } else if (window.playerPotion === "block") {
-            potionIcon = "🛡️";
-            potionDesc = "【防御ポーション】\n戦闘中に使用可能。即座にブロックを 20 獲得する。";
-        } else if (window.playerPotion === "draw") {
-            potionIcon = "🎴";
-            potionDesc = "【ドローポーション】\n戦闘中に使用可能。山札からカードを 3 枚多く引く。";
-        } else if (window.playerPotion === "acid") {
-            potionIcon = "🧪";
-            potionDesc = "【強酸ポーション】\n戦闘中に使用可能。敵のブロックを 0 にして、毒5 を付与する。";
-        }
+        window.playerPotions = window.playerPotions || [];
+        window.maxPotionSlots = window.maxPotionSlots || 1;
 
+        potionArea.style.gap = "8px";
 
-        // ポーションの所持状態に合わせて、HTMLの固定領域の中身を完全に書き換える
-        if (window.playerPotion) {
-            // ① ポーション所持時：CSSの「potion-active-btn」を使い正円(〇)ボタンにする
-            potionArea.title = potionDesc; // マウスホバーで説明表示
-            potionArea.innerHTML = `
-                <button id="uiPotionBtn" class="potion-active-btn" onclick="usePotion();">
-                    ${potionIcon}
-                </button>
-            `;
-            
-            // ⚠️ 戦闘中でない場合（マップなど）は誤クリック防止のためにボタンを半透明にし、無効化する
-            const btn = document.getElementById("uiPotionBtn");
-            if (btn && !window.inBattle) {
-                btn.disabled = true;
-                btn.style.pointerEvents = "none"; 
-                btn.style.opacity = "0.5";
+        let slotsHtml = "";
+        for (let i = 0; i < window.maxPotionSlots; i++) {
+            const type = window.playerPotions[i];
+            if (type) {
+                const info = potionInfo[type] || { icon: "🎒", desc: "ポーション" };
+                const disabledAttrs = window.inBattle ? "" : `disabled style="pointer-events:none; opacity:0.5;"`;
+                slotsHtml += `<button class="potion-active-btn" title="${info.desc}" onclick="usePotion(${i});" ${disabledAttrs}>${info.icon}</button>`;
+            } else {
+                slotsHtml += `<div class="potion-empty-slot" title="ポーションを所持していません。">なし</div>`;
             }
-        } else {
-            // ② 未所持時：CSSの「potion-empty-slot」を使い、灰色の丸枠(〇)の中に「なし」を表示
-            potionArea.title = potionDesc;
-            potionArea.innerHTML = `<div class="potion-empty-slot">なし</div>`;
         }
+        potionArea.innerHTML = slotsHtml;
     }
     // =========================================================================
 

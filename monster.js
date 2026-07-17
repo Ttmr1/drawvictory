@@ -28,6 +28,9 @@ const enemyTypes = {
     trait:    { name:"Trait",     icon:"👽", hpRate:0.80, atkRate:0.80, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     bastion:  { name:"Bastion",   icon:"💠", hpRate:1.00, atkRate:0.85, blockRate:1.50, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     fate:     { name:"Fate",      icon:"✨", hpRate:1.10, atkRate:0.75, blockRate:0.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
+    timer:    { name:"Timer",     icon:"⏰", hpRate:1.00, atkRate:0.90, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
+    gunner:   { name:"Gunner",    icon:"🔫", hpRate:0.90, atkRate:1.00, blockRate:0.90, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
+    void:     { name:"Void",      icon:"🌑", hpRate:0.95, atkRate:0.85, blockRate:0.85, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
 
 
 //ボス
@@ -47,7 +50,7 @@ const enemyTypes = {
 function initEnemyStatus() {
 
     //const pool = ["robot"]
-    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait","bastion","fate"];
+    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait","bastion","fate","timer","gunner","void"];
 
 // ─── 敵の種類の選定 ───
 
@@ -128,6 +131,27 @@ function applyEnemyTurnStartTraits() {
             enemy.data.immuneNormal = false;
             enemy.data.immuneStatus = true;
         }
+    }
+}
+
+// 🌑 Void：毎ターン、プレイヤーに過労を付与し、手札からランダムに2枚捨て札へ送る
+function applyVoidTurnEffect() {
+    if (!(window.inBattle && enemy.data && enemy.data.name === "Void")) return;
+
+    player.status.fatigue = 1;
+
+    let discarded = 0;
+    for (let i = 0; i < 2 && window.hand && hand.length > 0; i++) {
+        const randIndex = Math.floor(Math.random() * hand.length);
+        const [discardedCard] = hand.splice(randIndex, 1);
+        discardPile.push(discardedCard);
+        discarded++;
+    }
+
+    if (discarded > 0) {
+        customAlert(`🌑 Voidの侵食！過労が付与され、手札が${discarded}枚捨て札に送られた！`);
+    } else {
+        customAlert(`🌑 Voidの侵食！過労が付与された！`);
     }
 }
 

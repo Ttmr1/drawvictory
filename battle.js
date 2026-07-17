@@ -150,13 +150,23 @@ if (enemy.data.name === "Trait") {
     window.isFirstTurn = true;           
     window.witchBannedCategory = null;
     window.shadowCardCountThisTurn = 0;
+    window.cardsPlayedThisTurn = 0;
     player.status = player.status || {};
     player.status.immaturity = 0; 
     player.status.leak = 0;       
     player.status.fatigue = 0;    
+    player.status.meditation = 0;
     player.status.counterTurns = player.status.counterTurns || 0; 
 
-    window.playerPotion = window.playerPotion || null;
+    // 🧪 ポーションスロット（器のポーションでmaxPotionSlotsが増加する）
+    window.playerPotions = window.playerPotions || [];
+    window.maxPotionSlots = window.maxPotionSlots || 1;
+    window.vesselDrinkCount = window.vesselDrinkCount || 0;
+    // 旧バージョンの単一スロット(window.playerPotion)からの引き継ぎ
+    if (window.playerPotion && window.playerPotions.length === 0) {
+        window.playerPotions.push(window.playerPotion);
+    }
+    window.playerPotion = null;
 
     const enemyNameEl = document.getElementById("enemyName");
     const enemyIconEl = document.getElementById("enemyIcon");
@@ -199,6 +209,10 @@ console.log(enemy.status.traits);
     }
     
     if(typeof drawHand === 'function') drawHand();
+
+    // 🌑 Void: 1ターン目から過労を付与し、手札からランダムに2枚捨て札へ送る
+    if (typeof applyVoidTurnEffect === 'function') applyVoidTurnEffect();
+
     if(typeof updateUI === 'function') updateUI();
 }
 
@@ -308,6 +322,9 @@ function playCard(index){
 
     // 💡【修正】減算するエネルギーも実際のコスト(actualCost)に変更
     player.energy -= actualCost;
+
+    // 🃏 このターンに使用したカード枚数（id:1515「1ターン目の初手なら3枚ドロー」等で使用）
+    window.cardsPlayedThisTurn = (window.cardsPlayedThisTurn || 0) + 1;
     
     let shouldCopy = false;
     
@@ -319,8 +336,29 @@ function playCard(index){
         }
     }
 
-    // 効果発動
-    executeCardEffect(card, index);
+    // ⏰ Timer: atk/rec/abn/blkカードの効果を1ターン遅らせる（handSacrificeはhand参照が壊れるため即時実行）
+    const timerDelayCats = ["atk", "rec", "abn", "blk"];
+    if (enemy.data && enemy.data.name === "Timer" && timerDelayCats.includes(card.cat) && card.type !== "handSacrifice") {
+        enemy.status.timerQueue = enemy.status.timerQueue || [];
+        enemy.status.timerQueue.push(card);
+        customAlert(`⏰ 時が歪み、「${card.name}」の効果は次のターンに持ち越された…`);
+    } else {
+        // 効果発動
+        executeCardEffect(card, index);
+    }
+
+    // 📉 過労：状態が有効な間、カードを1枚使うたびに2ダメージを受ける
+    if (player.status.fatigue > 0 && inBattle) {
+        player.hp -= 2;
+        if (typeof createDamagePopup === 'function') createDamagePopup(2, false);
+        if (player.hp <= 0) {
+            player.hp = 0;
+            if(typeof renderHand === 'function') renderHand();
+            if(typeof updateUI === 'function') updateUI();
+            gameover();
+            return;
+        }
+    }
 
     // コピー処理（手札の末尾に追加）
     if (shouldCopy && inBattle) {
@@ -548,6 +586,10 @@ if(enemy.data.name==="Trait"){
     // プレイヤーのその他状態異常の残りターン減少
     if (player.status.immaturity > 0) player.status.immaturity--;
     if (player.status.fatigue > 0) player.status.fatigue--;
+    if (player.status.meditation > 0) {
+        player.status.meditation--;
+        if (player.status.meditation === 0) customAlert("🧘 瞑想の効果が切れた。");
+    }
 
     if(player.status.healTurns > 0){
         player.status.healTurns--;
@@ -814,17 +856,48 @@ if (enemy.data && enemy.data.name === "Greedy") {
                 enemy.status.predictTurns--;
             }
 
+            // ⏰ Timer：持ち越されたカード効果は次のターン（2ターン目以降）にここで発動する
+            if (enemy.data && enemy.data.name === "Timer" && window.battleTurnCount > 1 && enemy.status.timerQueue && enemy.status.timerQueue.length > 0) {
+                const queue = enemy.status.timerQueue;
+                enemy.status.timerQueue = [];
+                customAlert(`⏰ 歪んでいた時間が戻り、${queue.length}枚のカード効果が発動した！`);
+                queue.forEach(queuedCard => {
+                    if (typeof executeCardEffect === 'function') executeCardEffect(queuedCard, -1);
+                });
+                if (enemy.hp <= 0) {
+                    enemy.hp = 0;
+                    if (!tryPhoenixRevive()) {
+                        if (endTurnBtn) endTurnBtn.disabled = false;
+                        victory();
+                        return;
+                    }
+                }
+            }
+
             // 防御値（ブロック）計算
             let baseBlock = Math.floor(Math.random() * 5) + 3;
             let gainBlock = Math.floor(baseBlock * styleInfo.blkRate * (enemy.data ? enemy.data.blockRate : 1.0));
             
             // 攻撃値（ダメージ）計算
             let damage = enemy.attack;
-            if(enemy.status.freeze > 0){ 
+
+            // ❄️ 絶対零度と凍結は重ね掛けしない（絶対零度が優先。元の攻撃力から直接50%にする）
+            if (enemy.status.absoluteZeroTurns > 0) {
+                damage = Math.floor(damage * 0.5);
+                enemy.status.absoluteZeroTurns--;
+                if (enemy.status.freeze > 0) enemy.status.freeze--; // 凍結ターンは消費するが倍率には重ねない
+                logText += `<div style="color:#66d9ff; font-weight:bold;">❄️ 絶対零度の効果で攻撃力が半減している！</div>`;
+            } else if(enemy.status.freeze > 0){ 
                 damage = Math.floor(damage * 2 / 3); 
                 enemy.status.freeze--;
             }
             damage = Math.floor(damage * styleInfo.atkRate);
+
+            // ⏰ Timer：最初のターンは攻撃してこない
+            if (enemy.data && enemy.data.name === "Timer" && window.battleTurnCount === 1) {
+                damage = 0;
+                logText += `<div style="color:#aaa;">⏰ Timerは様子をうかがい、攻撃してこなかった。</div>`;
+            }
 
             if(enemy.data && enemy.data.name === "Beast"){
                 if(!window.beastDamagedThisTurn){ damage *= 2; logText += `<div style="color:#ff4141;">🦁 獣が怒り狂って攻撃力2倍！</div>`; }
@@ -856,8 +929,18 @@ if (enemy.data && enemy.data.name === "Greedy") {
             let hpBeforeHit = player.hp;
             if (damage > 0) {
                 let finalDamage = damage; 
-        
-                if (player.block > 0) {
+                const isGunner = enemy.data && enemy.data.name === "Gunner";
+
+                if (isGunner && player.block >= finalDamage) {
+                    // 🔫 Gunner：防御で完全に防がれた時、ダメージを1.5倍にしてから防御を差し引く
+                    const boostedDamage = Math.floor(finalDamage * 1.5);
+                    const blocked = Math.min(player.block, boostedDamage);
+                    finalDamage = Math.max(0, boostedDamage - blocked);
+                    player.block -= blocked;
+                    if (finalDamage > 0) {
+                        logText += `<div style="color:#ff4141; font-weight:bold;">🔫 Gunnerが防御の隙を撃ち抜いた！ダメージ1.5倍！</div>`;
+                    }
+                } else if (player.block > 0) {
                     const blocked = Math.min(player.block, finalDamage);
                     finalDamage -= blocked; 
                     player.block -= blocked;
@@ -944,6 +1027,16 @@ if (enemy.data && enemy.data.name === "Greedy") {
         }
     }
     player.energy = player.maxEnergy;
+
+    // ⚡ id:1514「次ターンにエネルギー+2」の予約分を消費
+    if (player.status.nextTurnEnergyBonus > 0) {
+        player.energy += player.status.nextTurnEnergyBonus;
+        customAlert(`⚡ 予約されていたエネルギー+${player.status.nextTurnEnergyBonus}が発動！`);
+        player.status.nextTurnEnergyBonus = 0;
+    }
+
+    // 🃏 このターンに使用したカード枚数をリセット
+    window.cardsPlayedThisTurn = 0;
     
     if(player.status.healTurns > 0) player.hp = Math.min(player.maxHp, player.hp + player.status.heal);
     
@@ -967,6 +1060,10 @@ if (enemy.data && enemy.data.name === "Greedy") {
     for(let i = 0; i < drawCount; i++){ 
         if(typeof drawOneCard === 'function') drawOneCard(); 
     }
+
+    // 🌑 Void: 毎ターン過労を付与し、手札からランダムに2枚捨て札へ送る
+    if (typeof applyVoidTurnEffect === 'function') applyVoidTurnEffect();
+
     if(typeof renderHand === 'function') renderHand();
     if(typeof updateUI === 'function') updateUI();
 
@@ -985,6 +1082,7 @@ function victory(){
         player.status.amnesia = 0;         // 忘却 ❓
         player.status.counterTurns = 0;    // カウンター 👊
         player.status.fatigue = 0;         // 過労 📉
+        player.status.meditation = 0;      // 瞑想 🧘
         player.status.healTurns = 0;       // ヒール持続ターン 💖
 	player.status.comboPlusTurns=0;   // コンボ増加
     }
@@ -1197,18 +1295,22 @@ function getPotionName(type) {
     if (type === "block") return "防御ポーション 🛡️";
     if (type === "draw") return "ドローポーション 🎴";
     if (type === "acid") return "強酸ポーション 🧪";
+    if (type === "vessel") return "器のポーション 🏺";
     return "ポーション";
 }
 
-function usePotion() {
+function usePotion(slotIndex) {
     if (!inBattle) return;
-    if (window.playerPotion === null) {
+    if (!window.playerPotions || window.playerPotions.length === 0) {
         customAlert("ポーションを持っていません！");
         return;
     }
+    if (slotIndex === undefined || slotIndex === null || slotIndex < 0 || slotIndex >= window.playerPotions.length) {
+        slotIndex = 0; // 指定がなければ先頭のポーションを使用
+    }
 
-    const type = window.playerPotion;
-    window.playerPotion = null; 
+    const type = window.playerPotions[slotIndex];
+    window.playerPotions.splice(slotIndex, 1);
 
     if (type === "heal") {
         player.hp = Math.min(player.maxHp, player.hp + 15);
@@ -1240,6 +1342,16 @@ function usePotion() {
                 duration: 5,
                 isNew: true
             });
+        }
+    }
+    else if (type === "vessel") {
+        // 🏺 器のポーション：2回飲むとポーションスロットが1つ増える
+        window.vesselDrinkCount = (window.vesselDrinkCount || 0) + 1;
+        if (window.vesselDrinkCount >= 2) {
+            window.maxPotionSlots = (window.maxPotionSlots || 1) + 1;
+            customAlert(`🏺 器のポーションを2回飲み干した！ポーションスロットが1つ増えた！(現在:${window.maxPotionSlots}個)`);
+        } else {
+            customAlert(`🏺 器のポーションを飲んだ…あと${2 - window.vesselDrinkCount}回でスロットが増えそうだ。`);
         }
     }
 
@@ -1315,19 +1427,4 @@ function returnToTitle() {
 
     // 必要ならここで初期化
     location.reload();
-}
-
-
-function saveSlotData(slotNumber = 1) {
-    const saveData = {
-        playerHp: player.hp,
-        playerMaxHp: player.maxHp,
-        gold: player.gold,
-        deck: player.deck,
-        currentStage: gameStage,
-        savedAt: new Date().toLocaleString()
-    };
-
-    localStorage.setItem(`game_slot_${slotNumber}`, JSON.stringify(saveData));
-    console.log(`スロット ${slotNumber} にデータを保存しました。`);
 }

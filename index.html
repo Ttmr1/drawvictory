@@ -237,7 +237,7 @@
 
 	<div style="margin-bottom: 25px; text-align: left;">
             <div style="font-size: 13px; margin-bottom: 8px; color: #ccc;">アラート表示時間: <span id="alertTimeVal">4</span>秒</div>
-            <input type="range" id="alertTimeRange" min="0" max="10" value="4" style="width: 100%; cursor: pointer;"
+            <input type="range" id="alertTimeRange" min="1" max="10" value="4" style="width: 100%; cursor: pointer;"
                    oninput="document.getElementById('alertTimeVal').innerText = this.value; localStorage.setItem('alert_display_time', this.value);">
             <button onclick="saveAndTestAlert()" style="width: 100%; margin-top: 10px; padding: 8px; background: #53354a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
                 設定をテスト表示
