@@ -270,6 +270,20 @@ const allCardsMaster = [
 { id: 2411, name: "猛毒", cost: 3, desc: "敵の毒の効果を全て1.5倍かつ残り2ターン", type: "poisonpoison", value: 1.5, turn: 2, rarity: "rare", cat: "abn", isInitial: false },
 
 
+{ id: 1412, name: "ループ", cost: 3, desc: "ループ状態を付与", type: "timeLoop", rarity: "uncommon", cat: "abn", isInitial: false },
+{ id: 2412, name: "ループ", cost: 2, desc: "ループ状態を付与", type: "timeLoop", rarity: "rare", cat: "abn", isInitial: false },
+
+// type: "buffMeditation" -> id順
+{ id: 1414, name: "瞑想", cost: 1, desc: "瞑想状態を付与する(2ターン)", type: "buffMeditation", turn: 2, rarity: "uncommon", cat: "abn", isInitial: false },
+
+// type: "grantAbsoluteZero" -> id順
+{ id: 1415, name: "絶対零度", cost: 2, desc: "絶対零度状態を付与する(1ターン)", type: "grantAbsoluteZero", turn: 1, rarity: "uncommon", cat: "abn", isInitial: false },
+{ id: 2415, name: "絶対零度", cost: 4, desc: "絶対零度状態を付与する(1T,50%の確率で2Tになる)", type: "grantAbsoluteZero", turn: 1, bonusChance: 0.5, bonusTurn: 2, rarity: "rare", cat: "abn", isInitial: false },
+
+// type: "freezeThenAbsoluteZero" -> id順
+{ id: 1416, name: "超絶対零度", cost: 5, desc: "敵を凍結状態にして絶対零度状態を付与する(1T)", type: "freezeThenAbsoluteZero", freezeTurn: 1, turn: 1, rarity: "uncommon", cat: "abn", isInitial: false },
+{ id: 2416, name: "超絶対零度", cost: 7, desc: "敵を凍結状態にして絶対零度状態を付与する(1T、50%の確率で2Tになる)", type: "freezeThenAbsoluteZero", freezeTurn: 1, turn: 1, bonusChance: 0.5, bonusTurn: 2, rarity: "rare", cat: "abn", isInitial: false },
+
 
 
 // ==========================================
@@ -297,23 +311,6 @@ const allCardsMaster = [
 
 // type: "redrawAll" -> id順
 { id: 1506, name: "引き直し", cost: 2, desc: "手札をすべて捨て、捨てた枚数カードを引く", type: "redrawAll", value: 0, rarity: "uncommon", cat: "oth", isInitial: false },
-
-{ id: 1507, name: "ループ", cost: 3, desc: "ループ状態を付与", type: "timeLoop", rarity: "uncommon", cat: "abn", isInitial: false },
-{ id: 2507, name: "ループ", cost: 2, desc: "ループ状態を付与", type: "timeLoop", rarity: "rare", cat: "abn", isInitial: false },
-
-// type: "absoluteZero" -> id順
-{ id: 1412, name: "絶対零度", cost: 3, desc: "敵が凍結状態なら、凍結を解除し攻撃力を50%にする(1ターン)。凍結状態でなければ効果なし", type: "absoluteZero", turn: 1, rarity: "uncommon", cat: "abn", isInitial: false },
-
-// type: "buffMeditation" -> id順
-{ id: 1415, name: "瞑想", cost: 1, desc: "瞑想状態を付与する(2ターン)", type: "buffMeditation", turn: 2, rarity: "uncommon", cat: "abn", isInitial: false },
-
-// type: "grantAbsoluteZero" -> id順
-{ id: 1413, name: "絶対零度付与", cost: 2, desc: "絶対零度状態を付与する(1ターン)", type: "grantAbsoluteZero", turn: 1, rarity: "uncommon", cat: "abn", isInitial: false },
-{ id: 2413, name: "絶対零度付与", cost: 4, desc: "絶対零度状態を付与する(1ターン、50%の確率で2ターンになる)", type: "grantAbsoluteZero", turn: 1, bonusChance: 0.5, bonusTurn: 2, rarity: "rare", cat: "abn", isInitial: false },
-
-// type: "freezeThenAbsoluteZero" -> id順
-{ id: 1414, name: "凍結&絶対零度", cost: 5, desc: "敵を凍結状態にしてから絶対零度状態を付与する(1ターン)", type: "freezeThenAbsoluteZero", freezeTurn: 1, turn: 1, rarity: "uncommon", cat: "abn", isInitial: false },
-{ id: 2414, name: "凍結&絶対零度", cost: 7, desc: "敵を凍結状態にしてから絶対零度状態を付与する(1ターン、50%の確率で2ターンになる)", type: "freezeThenAbsoluteZero", freezeTurn: 1, turn: 1, bonusChance: 0.5, bonusTurn: 2, rarity: "rare", cat: "abn", isInitial: false },
 
 // type: "camouflage" -> id順
 { id: 1508, name: "超攻撃型をバランス型", cost: 4, desc: "敵の「超攻撃型」を「バランス型」にする(2T)", type: "camouflage", duration: 2, rarity: "uncommon", cat: "oth", isInitial: false },
