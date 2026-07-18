@@ -462,7 +462,6 @@ if (card.type === "absoluteZero") {
 //瞑想状態を付与する
 if (card.type === "buffMeditation") {
         player.status.meditation = (player.status.meditation || 0) + (card.turn || 2);
-        customAlert(`🧘 瞑想状態になった！防御系カードの効果が1.25倍になる(${card.turn || 2}T)`);
         if (typeof updateUI === 'function') updateUI();
     }
 
@@ -475,7 +474,6 @@ if (card.type === "grantAbsoluteZero") {
                 turns = card.bonusTurn || turns;
             }
             enemy.status.absoluteZeroTurns = (enemy.status.absoluteZeroTurns || 0) + turns;
-            customAlert(`❄️ 絶対零度状態を付与した！敵の攻撃力が50%になる(${turns}T)`);
         } else {
             customAlert("敵は状態異常無効のため、絶対零度は効果がなかった…");
         }
