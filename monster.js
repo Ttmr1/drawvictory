@@ -20,14 +20,14 @@ const enemyTypes = {
     robot:    { name:"Robot",     icon:"🤖", hpRate:1.00, atkRate:1.00, blockRate:1.25, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 150 },
     witch:    { name:"Witch",     icon:"🧙‍♂️", hpRate:1.25, atkRate:0.75, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     reaper:   { name:"Reaper",    icon:"🩻", hpRate:0.75, atkRate:1.25, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
-    ork:      { name:"Ork",       icon:"🐗", hpRate:0.80, atkRate:0.75, blockRate:0.80, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 225 },
+    ork:      { name:"Ork",       icon:"🐗", hpRate:0.80, atkRate:0.65, blockRate:0.80, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 225 },
     bee:      { name:"Bee",       icon:"🐝", hpRate:0.50, atkRate:1.25, blockRate:0.25, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     undoll:   { name:"Undoll",    icon:"🪆", hpRate:0.80, atkRate:0.75, blockRate:0.50, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
-    assassin: { name:"Assassin",  icon:"🥷", hpRate:0.75, atkRate:1.90, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
+    assassin: { name:"Assassin",  icon:"🥷", hpRate:0.75, atkRate:1.85, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     greedy:   { name:"Greedy",    icon:"🦹", hpRate:0.75, atkRate:1.00, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     trait:    { name:"Trait",     icon:"👽", hpRate:0.80, atkRate:0.80, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
-    bastion:  { name:"Bastion",   icon:"💠", hpRate:1.00, atkRate:0.85, blockRate:1.50, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
-    gunner:   { name:"Gunner",    icon:"🔫", hpRate:0.90, atkRate:1.00, blockRate:0.90, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
+    bastion:  { name:"Bastion",   icon:"💠", hpRate:0.85, atkRate:0.85, blockRate:1.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
+    gunner:   { name:"Gunner",    icon:"🔫", hpRate:0.90, atkRate:0.90, blockRate:0.90, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     void:     { name:"Void",      icon:"🌑", hpRate:0.95, atkRate:0.85, blockRate:0.85, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
 
 

@@ -627,7 +627,7 @@ function switchMenuTab(tabName) {
                     <span>Bastion 💠</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <strong style="color: #00adb5;">【防御貫通不可】</strong>
-                        <span style="color: gold;">200G</span>
+                        <span style="color: gold;">175G</span>
                     </div>
                 </div>
                 <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
