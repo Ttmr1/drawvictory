@@ -27,8 +27,6 @@ const enemyTypes = {
     greedy:   { name:"Greedy",    icon:"🦹", hpRate:0.75, atkRate:1.00, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     trait:    { name:"Trait",     icon:"👽", hpRate:0.80, atkRate:0.80, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     bastion:  { name:"Bastion",   icon:"💠", hpRate:1.00, atkRate:0.85, blockRate:1.50, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
-    fate:     { name:"Fate",      icon:"✨", hpRate:1.10, atkRate:0.75, blockRate:0.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
-    //timer:    { name:"Timer",     icon:"⏰", hpRate:1.00, atkRate:0.90, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     gunner:   { name:"Gunner",    icon:"🔫", hpRate:0.90, atkRate:1.00, blockRate:0.90, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     void:     { name:"Void",      icon:"🌑", hpRate:0.95, atkRate:0.85, blockRate:0.85, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
 
@@ -50,7 +48,7 @@ const enemyTypes = {
 function initEnemyStatus() {
 
     //const pool = ["robot"]
-    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait","bastion","fate","gunner","void"];
+    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait","bastion","gunner","void"];
 
 // ─── 敵の種類の選定 ───
 
@@ -65,7 +63,7 @@ function initEnemyStatus() {
     else if (floor === 1) {
         // 1階はゴブリン固定
         player.darkMarketCount = 0;
-        //type = "goblin";
+        //type = "void";
 	type = pool[Math.floor(Math.random() * pool.length)];
 	//1階はエリアなし
 	window.currentArea = "none";

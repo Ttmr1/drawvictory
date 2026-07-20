@@ -213,6 +213,7 @@ console.log(enemy.status.traits);
     // 🌑 Void: 1ターン目から過労を付与し、手札からランダムに2枚捨て札へ送る
     if (typeof applyVoidTurnEffect === 'function') applyVoidTurnEffect();
 
+    if(typeof renderHand === 'function') renderHand();
     if(typeof updateUI === 'function') updateUI();
 }
 
@@ -613,9 +614,9 @@ if(enemy.data.name==="Trait"){
             enemy.status.freeze = 0;
             enemy.status.stun = 0;
         }
-        enemy.hp = Math.min(enemy.maxHp, enemy.hp + 10);
+        enemy.hp = Math.min(enemy.maxHp, enemy.hp + 5);
 
-        if (Math.random() < (2 / 3)) {
+        if (Math.random() < (1 / 3)) {
             enemy.hp = Math.min(enemy.maxHp, enemy.hp + 10);
         }
 	if(Math.random() < 0.33){
@@ -799,41 +800,6 @@ if (enemy.data && enemy.data.name === "Greedy") {
             }
 
             if (logArea) logArea.innerHTML = logText;
-
-            if(typeof updateUI === 'function') updateUI();
-        } else if (enemy.data && enemy.data.name === "Fate") {
-            // ✨ Fateのランダム運命行動（毎ターン1回抽選）
-            const rng = Math.random();
-
-            if (rng < 0.05) { // 5%：プレイヤーに最大HP40%分ダメージ
-                const dmgAmount = Math.floor(player.maxHp * 0.40);
-                player.hp = Math.max(0, player.hp - dmgAmount);
-                if (typeof createDamagePopup === 'function') createDamagePopup(dmgAmount, false);
-                customAlert(`✨ 運命の啓示！プレイヤーに ${dmgAmount} ダメージ！`);
-            } else if (rng < 0.25) { // 20%：敵自身に最大HP10%分自爆ダメージ
-                const selfDmg = Math.floor(enemy.maxHp * 0.10);
-                enemy.hp = Math.max(0, enemy.hp - selfDmg);
-                if (typeof createDamagePopup === 'function') createDamagePopup(selfDmg, true);
-                customAlert(`✨ 運命の反動！Fateは自爆し、${selfDmg} ダメージを受けた！`);
-            } else if (rng < 0.35) { // 10%：敵がブロック30を得る
-                enemy.block += 30;
-                customAlert(`✨ 運命の加護！Fateのブロックが30増加した！`);
-            } else if (rng < 0.50) { // 15%：プレイヤーに最大HP10%分ダメージ
-                const dmgAmount = Math.floor(player.maxHp * 0.10);
-                player.hp = Math.max(0, player.hp - dmgAmount);
-                if (typeof createDamagePopup === 'function') createDamagePopup(dmgAmount, false);
-                customAlert(`✨ 運命の悪戯！プレイヤーに ${dmgAmount} ダメージ！`);
-            }
-            // 残り50%は何も起こらない
-
-            if (enemy.hp <= 0) {
-                enemy.hp = 0;
-                if (!tryPhoenixRevive()) {
-                    if(endTurnBtn) endTurnBtn.disabled = false;
-                    victory();
-                    return;
-                }
-            }
 
             if(typeof updateUI === 'function') updateUI();
         } else {
@@ -1113,9 +1079,20 @@ function victory(){
     } else if (floor >= 40) {
         customAlert(`🎉 40階ボスを撃破！ゲームクリアです！\n最終所持金: ${player.gold}G`);
         resetDeckBattle();
-        const startScreen = document.getElementById("startScreen");
-        if(startScreen) startScreen.style.display = "flex";
-        location.reload();
+
+    // モーダルへ情報を表示
+
+    document.getElementById("gameClearEnemy").innerText = boss20;
+    document.getElementById("gameClearEnemy").innerText = boss40;
+
+    document.getElementById("gameClearFloor").innerText = floor;
+    document.getElementById("gameClearGold").innerText = player.gold;
+
+    // ゲームオーバーモーダル表示
+    document.getElementById("gameOverModal").style.display = "flex";
+
+
+
         return;
     }
 
@@ -1411,6 +1388,8 @@ function gameover() {
     if (endTurnBtn) endTurnBtn.disabled = false;
 
     // モーダルへ情報を表示
+
+    document.getElementById("gameOverEnemy").innerText = enemy.data.name;
     document.getElementById("gameOverFloor").innerText = floor;
     document.getElementById("gameOverGold").innerText = player.gold;
 

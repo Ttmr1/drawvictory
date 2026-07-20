@@ -635,31 +635,6 @@ function switchMenuTab(tabName) {
                 </div>
             </div>
 
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Fate ✨</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【毎ターンランダム運命】</strong>
-                        <span style="color: gold;">200G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    5%でプレイヤーに最大HP40%分ダメージ、20%で敵自身に最大HP10%分の自爆ダメージ、10%で敵自身のブロックを30獲得、15%でプレイヤーに最大HP10%分ダメージ。残り50%は何も起こらない。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Timer ⏰</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【カード効果を1ターン遅延】</strong>
-                        <span style="color: gold;">200G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    プレイヤーの「攻撃系・回復系・状態異常系・防御系」カードの効果を1ターン遅らせる（ダメージや状態異常は次のターンに発動する）。最初のターンはTimer自身も攻撃してこない。
-                </div>
-            </div>
 
             <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
                 <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
@@ -699,7 +674,7 @@ function switchMenuTab(tabName) {
                     </div>
                 </div>
                 <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.3); font-size: 20px; color: #eee; line-height: 1.5;">
-                    ボスの1体。ターン開始時に1/3の確率で、自身にかかっているすべての状態異常（毒や火傷など）を完全に消去してクリアにする。さらに、毎ターン終了時にHPが「10」回復し、2/3の確率でさらに追加で「10」回復する。1/3で未熟を付与する。常にスタン状態を無効化する。
+                    ボスの1体。ターン開始時に1/3の確率で、自身にかかっているすべての状態異常（毒や火傷など）を完全に消去してクリアにする。さらに、毎ターン終了時にHPが「5」回復し、1/3の確率でさらに追加で「10」回復する。1/3で未熟を付与する。常にスタン状態を無効化する。
                 </div>
             </div>
             

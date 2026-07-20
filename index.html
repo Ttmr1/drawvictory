@@ -258,6 +258,8 @@
 
         <h1 class="gameover-title">You Dead</h1>
 
+	<h2><strong><span id="gameOverEnemy">Goblin</span></strong> によってやられた</h2>
+
         <p>到達階層：<span id="gameOverFloor">1</span>F</p>
 
         <p>所持金：<span id="gameOverGold">0</span>G</p>
@@ -275,6 +277,36 @@
     </div>
 
 </div>
+
+<div id="gameClearModal" class="gameover-modal">
+
+    <div class="gameClear-content">
+
+        <h1 class="gameClear-title">You Win!!</h1>
+
+	<h2><strong><span id="gameOverEnemy">Goblin</span></strong> によってやられた</h2>
+
+        <p>到達階層：<span id="gameOverFloor">1</span>F</p>
+
+        <p>所持金：<span id="gameOverGold">0</span>G</p>
+
+        <div style="margin-top:25px;">
+            <button onclick="showMapDeckManager()">
+                📖 デッキ一覧
+            </button>
+
+            <button onclick="returnToTitle()">
+                🏠 スタート画面
+            </button>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+
 
 <p id="enemyTrait"></p>
 
