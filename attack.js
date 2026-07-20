@@ -624,7 +624,10 @@ if (card.type === "DiscardDraw") {
 
     // 捨てる枚数が0なら、そのままドロー
     if (card.value === 0) {
-        drawCards(card.draw);
+        for (let i = 0; i < card.draw; i++) {
+            if (typeof drawOneCard === "function") drawOneCard();
+	
+        }
         if (typeof renderHand === "function") renderHand();
         return;
     }
@@ -641,7 +644,7 @@ if (card.type === "DiscardDraw") {
         selectedIndices: [],
         usedCardIndex: index
     };
-
+        if (typeof updateUI === 'function') updateUI();
     customAlert(`手札から外すカードを ${Math.min(card.value, hand.length - 1)} 枚、クリックして選んでください。`);
 
     if (typeof renderHand === "function") renderHand();

@@ -224,21 +224,22 @@ function playCard(index){
     if (window.discardSelectMode && window.discardSelectMode.active) {
         const mode = window.discardSelectMode;
 
-        // 選択を記録
+        // 初回選択時に「選択可能な上限枚数」を確定させておく（以後の手札減少で変動させない）
+        if (mode.maxSelectable === undefined) {
+            mode.maxSelectable = Math.min(mode.requiredCount, hand.length - 1);
+        }
+
+        // ★クリックした瞬間にそのカードを手札から取り除き、捨て札へ送る
+        const discardedCard = hand[index];
+        if (typeof discardPile !== 'undefined') discardPile.push(discardedCard);
+        hand.splice(index, 1);
         mode.selectedIndices.push(index);
 
-        // 必要枚数に達したか、または選べるカードの上限に達したら処理を実行
-        const maxSelectable = Math.min(mode.requiredCount, hand.length - 1);
-        if (mode.selectedIndices.length >= maxSelectable) {
-            // インデックスを大きい順に並び替えて削除時のズレを防ぐ
-            mode.selectedIndices.sort((x, y) => y - x);
+        // ★即座に手札表示を更新（選んだカードがその場で消える）
+        if (typeof renderHand === 'function') renderHand();
 
-            // 選択されたカードを捨て札に送って手札から削除
-            mode.selectedIndices.forEach(idx => {
-                if (typeof discardPile !== 'undefined') discardPile.push(hand[idx]);
-                hand.splice(idx, 1);
-            });
-
+        // 必要枚数（選択可能な上限）に達したら処理を実行
+        if (mode.selectedIndices.length >= mode.maxSelectable) {
             // その後、b枚引く
             for (let i = 0; i < mode.drawCount; i++) {
                 if (typeof drawOneCard === 'function') drawOneCard();
@@ -251,7 +252,7 @@ function playCard(index){
             if (typeof renderHand === 'function') renderHand();
             if (typeof updateUI === 'function') updateUI();
         } else {
-            customAlert(`選択しました。あと ${maxSelectable - mode.selectedIndices.length} 枚選んでください。`);
+            customAlert(`選択しました。あと ${mode.maxSelectable - mode.selectedIndices.length} 枚選んでください。`);
         }
         return; // 選択モード中の時は、通常の「カード使用処理」を走らせずにここで終了する
     }
@@ -1080,16 +1081,7 @@ function victory(){
         customAlert(`🎉 40階ボスを撃破！ゲームクリアです！\n最終所持金: ${player.gold}G`);
         resetDeckBattle();
 
-    // モーダルへ情報を表示
-
-    document.getElementById("gameClearEnemy").innerText = boss20;
-    document.getElementById("gameClearEnemy").innerText = boss40;
-
-    document.getElementById("gameClearFloor").innerText = floor;
-    document.getElementById("gameClearGold").innerText = player.gold;
-
-    // ゲームオーバーモーダル表示
-    document.getElementById("gameOverModal").style.display = "flex";
+    gameClear();
 
 
 
@@ -1395,6 +1387,17 @@ function gameover() {
 
     // ゲームオーバーモーダル表示
     document.getElementById("gameOverModal").style.display = "flex";
+}
+
+function gameclear(){
+
+    document.getElementById("gameClearFloor").innerText = floor;
+    document.getElementById("gameClearGold").innerText = player.gold;
+
+    // ゲームオーバーモーダル表示
+    document.getElementById("gameClearModal").style.display = "flex";
+
+
 }
 
 function returnToTitle() {

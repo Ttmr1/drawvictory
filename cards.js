@@ -335,11 +335,11 @@ const allCardsMaster = [
 
 // type: "nextTurnEnergy" -> id順
 { id: 1514, name: "エネルギー予約", cost: 2, desc: "次ターンにエネルギーを+2する", type: "nextTurnEnergy", value: 2,plusValue:0, rarity: "uncommon", cat: "oth", isInitial: false },
-{ id: 2514, name: "エネルギー予約", cost: 2, desc: "次ターンにエネルギーを+2する。さらに50%で+1", type: "nextTurnEnergy", value: 2,plusValue:1, rarity: "rare", cat: "oth", isInitial: false },
+{ id: 2514, name: "エネルギー予約", cost: 2, desc: "次ターンにエネルギーを+2する。さらに33%で+1", type: "nextTurnEnergy", value: 2,plusValue:1,plusP:0.33, rarity: "rare", cat: "oth", isInitial: false },
 
 // type: "firstCardDraw" -> id順
-{ id: 1515, name: "幸先の一手", cost: 1, desc: "1ターン目に最初に使用すればカードを3枚引く", type: "firstCardDraw", value: 3, rarity: "uncommon", cat: "oth", isInitial: false },
-{ id: 2515, name: "幸先の一手", cost: 0, desc: "1ターン目に最初に使用すればカードを3枚引く", type: "firstCardDraw", value: 3, rarity: "rare", cat: "oth", isInitial: false },
+{ id: 1515, name: "幸先の一手", cost: 1, desc: "1ターン目かつ最初に使用すればカードを3枚引く", type: "firstCardDraw", value: 3, rarity: "uncommon", cat: "oth", isInitial: false },
+{ id: 2515, name: "幸先の一手", cost: 0, desc: "1ターン目かつ最初に使用すればカードを3枚引く", type: "firstCardDraw", value: 3, rarity: "rare", cat: "oth", isInitial: false },
 
 
 // ==========================================
