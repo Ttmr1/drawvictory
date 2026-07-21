@@ -1068,22 +1068,16 @@ function victory(){
     player.gold = (player.gold || 0) + gainGold;
 
     if (floor === 20) {
-        const proceed = confirm(`🎉 20階ボスを撃破！\n所持金: ${player.gold}G\n\nこのまま40階まで挑戦を続けますか？`);
-        if (!proceed) {
-            customAlert(`ゲームを終了します。\n最終所持金: ${player.gold}G`);
             resetDeckBattle();
-            const startScreen = document.getElementById("startScreen");
-            if(startScreen) startScreen.style.display = "flex";
-            location.reload();
+            gameSave();
             return;
-        }
-    } else if (floor >= 40) {
+    
+    }
+    if (floor >= 40) {
         customAlert(`🎉 40階ボスを撃破！ゲームクリアです！\n最終所持金: ${player.gold}G`);
         resetDeckBattle();
 
-    gameClear();
-
-
+    gameclear();
 
         return;
     }
@@ -1366,6 +1360,27 @@ window.addEventListener("keydown", function(event) {
     }
 });
 
+function gameSave(){
+
+
+    document.getElementById("gameSaveEnemy").innerText = enemy.data.name;
+    document.getElementById("gameSaveFloor").innerText = floor;
+    document.getElementById("gameSaveGold").innerText = player.gold;
+
+    // 到達記録モーダル表示
+    document.getElementById("gameSaveModal").style.display = "flex";
+
+
+}
+
+function continueFromGameSave(){
+    const modal = document.getElementById("gameSaveModal");
+    if (modal) modal.style.display = "none";
+
+    // 通常のマップ選択画面へ進み、次の階層へ進めるようにする
+    if (typeof openMap === 'function') openMap();
+}
+
 function gameover() {
 
     if (enemy.data && enemy.data.name === "Reaper") {
@@ -1391,6 +1406,7 @@ function gameover() {
 
 function gameclear(){
 
+    document.getElementById("gameClearEnemy").innerText = enemy.data.name;
     document.getElementById("gameClearFloor").innerText = floor;
     document.getElementById("gameClearGold").innerText = player.gold;
 

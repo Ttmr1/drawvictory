@@ -67,7 +67,6 @@ function initEnemyStatus() {
 	type = pool[Math.floor(Math.random() * pool.length)];
 	//1階はエリアなし
 	window.currentArea = "none";
-
     }
     else {
         // 通常プールからランダムに1つ選ぶ
