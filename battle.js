@@ -609,13 +609,13 @@ if(enemy.data.name==="Trait"){
 
     // ドラゴンの特殊能力
     if (enemy.data && enemy.data.name === "Dragon") {
-        if (Math.random() < (1 / 3)) {
+        if (Math.random() < (1 / 4)) {
             enemy.status.poisonList = []; 
             enemy.status.burn = 0;
             enemy.status.freeze = 0;
             enemy.status.stun = 0;
         }
-        enemy.hp = Math.min(enemy.maxHp, enemy.hp + 5);
+        enemy.hp = Math.min(enemy.maxHp, enemy.hp + 10);
 
         if (Math.random() < (1 / 3)) {
             enemy.hp = Math.min(enemy.maxHp, enemy.hp + 10);
