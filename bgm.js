@@ -3,7 +3,16 @@
 // ==========================================================
 // ↓ music フォルダに入れたmp3ファイル名をここに追記してください
 const BGM_TRACKS = [
-    "music/bgm1.mp3"
+    "music/404_フリーズ・コード.mp3"
+    "music/Alone.mp3"
+    "music/Combat March.mp3"
+    "music/Crystal brilliance.mp3"
+    "music/Glacial brilliance.mp3"
+    "music/water's pride.mp3"
+    "music/メランコリックシンドローム.mp3"
+    "music/絶望から見いだした希望.mp3"
+    "music/嘆きのダークローズ.mp3"
+    "music/不思議の国のアリス症候群.mp3"
 ];
 
 let bgmAudio = new Audio();
