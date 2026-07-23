@@ -3,20 +3,21 @@
 // ==========================================================
 // ↓ music フォルダに入れたmp3ファイル名をここに追記してください
 const BGM_TRACKS = [
-    "music/404_フリーズ・コード.mp3"
-    "music/Alone.mp3"
-    "music/Combat March.mp3"
-    "music/Crystal brilliance.mp3"
-    "music/Glacial brilliance.mp3"
-    "music/water's pride.mp3"
-    "music/メランコリックシンドローム.mp3"
-    "music/絶望から見いだした希望.mp3"
-    "music/嘆きのダークローズ.mp3"
+    "music/404 フリーズコード.mp3",
+    "music/Alone.mp3",
+    "music/Combat March.mp3",
+    "music/Crystal brilliance.mp3",
+    "music/Glacial brilliance.mp3",
+    "music/water's pride.mp3",
+    "music/メランコリックシンドローム.mp3",
+    "music/絶望から見いだした希望.mp3",
+    "music/嘆きのダークローズ.mp3",
     "music/不思議の国のアリス症候群.mp3"
 ];
 
 let bgmAudio = new Audio();
 let bgmLastIndex = -1;
+let bgmPool = []; // まだ今回のサイクルで流していない曲のインデックス一覧
 
 // 音量はlocalStorageに保存（設定画面のスライダーと連動）
 function getSavedBgmVolume() {
@@ -30,14 +31,29 @@ function setBgmVolume(percent) {
     localStorage.setItem('bgm_volume', percent);
 }
 
-// ランダムに次の曲を選ぶ（直前と同じ曲を避ける。曲が1曲しかない場合はそのまま）
+// 抽選プールを全曲分に補充する（1周し終わった時に呼ばれる）
+function refillBgmPool() {
+    bgmPool = BGM_TRACKS.map((_, i) => i);
+}
+
+// 抽選プールから1曲選んで取り除く（プールが空なら補充してから選ぶ）
+// 例: 10曲→9曲→8曲…→1曲→(全て流し終わったら)10曲に戻る
 function pickNextTrackIndex() {
     if (BGM_TRACKS.length <= 1) return 0;
-    let idx;
-    do {
-        idx = Math.floor(Math.random() * BGM_TRACKS.length);
-    } while (idx === bgmLastIndex);
-    return idx;
+
+    if (bgmPool.length === 0) {
+        refillBgmPool();
+    }
+
+    // プールを補充した直後は、直前の曲が連続で選ばれないよう一時的に除外する
+    let candidates = bgmPool;
+    if (bgmPool.length > 1 && bgmPool.includes(bgmLastIndex)) {
+        candidates = bgmPool.filter(i => i !== bgmLastIndex);
+    }
+
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    bgmPool = bgmPool.filter(i => i !== pick);
+    return pick;
 }
 
 function playRandomBgm() {
