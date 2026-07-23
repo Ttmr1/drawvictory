@@ -1381,6 +1381,26 @@ function continueFromGameSave(){
     if (typeof openMap === 'function') openMap();
 }
 
+//スコア計算
+function calculateScore() {
+    const deckCount = deck.length;
+    const hpPercent = player.maxHp > 0 ? Math.floor((player.hp / player.maxHp) * 100) : 0;
+    const gold = player.gold || 0;
+
+    let score = (deckCount * 5) + (hpPercent * 3) + (gold * 0.5) + (floor * 5);
+
+    if (floor >= 20) score += 200;
+    if (floor >= 40) {
+        score += 400;
+    }
+    
+    score -= 335;
+    // スコアが0未満にならないようにする
+    score = Math.max(0, score);
+
+    return Math.floor(score);
+}
+
 function gameover() {
 
     if (enemy.data && enemy.data.name === "Reaper") {
@@ -1399,6 +1419,7 @@ function gameover() {
     document.getElementById("gameOverEnemy").innerText = enemy.data.name;
     document.getElementById("gameOverFloor").innerText = floor;
     document.getElementById("gameOverGold").innerText = player.gold;
+    document.getElementById("gameOverScore").innerText = calculateScore();
 
     // ゲームオーバーモーダル表示
     document.getElementById("gameOverModal").style.display = "flex";
@@ -1409,6 +1430,7 @@ function gameclear(){
     document.getElementById("gameClearEnemy").innerText = enemy.data.name;
     document.getElementById("gameClearFloor").innerText = floor;
     document.getElementById("gameClearGold").innerText = player.gold;
+    document.getElementById("gameClearScore").innerText = calculateScore();
 
     // ゲームオーバーモーダル表示
     document.getElementById("gameClearModal").style.display = "flex";

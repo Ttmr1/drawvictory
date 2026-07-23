@@ -848,41 +848,7 @@ function handleSimplePromptDeletion() {
 // =========================================================================
 function updateUI(){
 
-if (enemy.data.name === "Trait") {
-    let traitText = [];
 
-    enemy.status.traits.forEach(trait => {
-        switch (trait) {
-            case "immuneNormal":
-                traitText.push("🛡️物理無効");
-                break;
-            case "immuneStatus":
-                traitText.push("☠️状態異常無効");
-                break;
-            case "atkUp":
-                traitText.push("⚔️攻撃力増加");
-                break;
-            case "heal":
-                traitText.push("💚毎ターン回復");
-                break;
-            case "leak":
-                traitText.push("⚡漏電付与");
-                break;
-            case "amnesia":
-                traitText.push("🧠忘却付与");
-                break;
-            case "immaturity":
-                traitText.push("👶未熟付与");
-                break;
-            case "fixedDamage":
-                traitText.push("💥固定ダメージ");
-                break;
-        }
-    });
-
-    document.getElementById("enemyTrait").innerHTML =
-        "特性：" + traitText.join(" / ");
-}
 
 
 const pHpText = document.getElementById("playerHpText");

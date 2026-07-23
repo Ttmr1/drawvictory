@@ -122,6 +122,8 @@ function openMenuPopup() {
                 <button onclick="switchMenuTab('battle')" class="tab-btn" id="tab-field" style="padding: 8px 12px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">⚔️ 戦闘について</button>
                 <button onclick="switchMenuTab('map')" class="tab-btn" id="tab-map" style="padding: 8px 12px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">🗺️ マップ</button>
                 <button onclick="switchMenuTab('cards')" class="tab-btn" id="tab-status" style="padding: 8px 12px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">🎴 カード一覧</button>
+                <button onclick="switchMenuTab('credit')" class="tab-btn" id="tab-status" style="padding: 8px 12px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">🎮 クレジット</button>
+
             </div>
 
             <!-- 説明文が切り替わるコンテンツエリア -->
@@ -320,6 +322,18 @@ function switchMenuTab(tabName) {
                     レアリテはcommon、uncommon、<span style="color: lightblue;">rare</span>、<span style="color: yellow;">legend</span>、<span style="color: purple;">space</span>があります。</p>
 		<p>カードを強化することでレアリティを1段階挙げることが出来ます。</p>
 		<p>commonまたはuncommonは<span style="color: lightblue;">rare</span>に、<span style="color: lightblue;">rare</span>は<span style="color: yellow;">legend</span>に、<span style="color: yellow;">legend</span>は<span style="color: purple;">space</span>に強化できますが、すべてのカードが<span style="color: purple;">space</span>まで強化できるとは限りません。</p>
+		</div>
+            </div>
+
+            <div class="rule-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="const detail = this.nextElementSibling; const isOpen = detail.style.display === 'block'; detail.style.display = isOpen ? 'none' : 'block'; this.classList.toggle('active'); if(!isOpen) { setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50); }" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>🅿スコアについて</span>
+                </div>
+                <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    ゲームオーバーまたはゲームクリア時にスコアが表示されます。</p>
+		<p>点数配分としては</p>
+		<p><strong>(デッキのカード枚数×5)+(残りのHP(%)×3)+(所持金×0.5)+(現在の階層×5)-355</strong></p>
+		<p>さらにボーナスとして、20階と40階のボスを倒すと+200と+400がそれぞれ加算されます。</p>
 		</div>
             </div>
 
@@ -811,6 +825,17 @@ function switchMenuTab(tabName) {
 	       `・体力回復　　　　:体力をさらに30%回復させます。</p>`+
 	       `・ゴールドを得る　:ゴールドが100G、125G、150Gのどれかが貰えます。</p>`;
     }
+
+    if (tabName === 'credit') {
+        html = `<h2>🗺️ BGM/音楽</h2>
+		<h3>フリーBGM</h3>
+               <a href="https://youtu.be/_UBvat9aFgI?si=L4cHjoTJezIhvS6a"
+   target="_blank"  style="color: lightblue;" 
+   rel="noopener noreferrer">
+    last stand / Tak_mfk
+</a>`;
+    }
+
 
     contentDiv.innerHTML = html;
 }

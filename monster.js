@@ -63,9 +63,10 @@ function initEnemyStatus() {
     else if (floor === 1) {
         // 1階はゴブリン固定
         player.darkMarketCount = 0;
-        //type = "void";
+        
 	type = pool[Math.floor(Math.random() * pool.length)];
-	//1階はエリアなし
+	type = "trait";	
+//1階はエリアなし
 	window.currentArea = "none";
     }
     else {
@@ -171,7 +172,7 @@ function getEnemyKillRewardGold() {
 // =========================================================================
 // 🎯 敵にダメージを与える関数（Phoenix復活 ＆ Spiritターン完全対応版）
 // =========================================================================
-function damageEnemy(amount, ignoreBlock = false) {
+function damageEnemy(amount, ignoreBlock = false, isPierce = false) {
     if (!inBattle) return;
 
     // 🐝Bee（蜂）の特性判定：33%の確率で攻撃や状態異常（スリップダメージ等含む）を完全無効化
@@ -212,8 +213,8 @@ function damageEnemy(amount, ignoreBlock = false) {
             const isOddTurn = (window.battleTurnCount % 2 !== 0);
 
             if (isOddTurn) {
-                // 奇数ターンは【物理無効】。物理攻撃（!ignoreBlock）ならダメージを0にする
-                if (!ignoreBlock) {
+                // 奇数ターンは【物理無効】。物理攻撃（!ignoreBlock）、または貫通（isPierce）ならダメージを0にする
+                if (!ignoreBlock || isPierce) {
                     finalDamage = 0;
                 }
             } else {
@@ -226,7 +227,10 @@ function damageEnemy(amount, ignoreBlock = false) {
         
         // ② スライム（Slime）の特性
         if (enemy.data.name === "Slime") {
-            if (!ignoreBlock) {
+            if (isPierce) {
+                // 貫通は物理無効の敵には効かない（0ダメージ）
+                finalDamage = 0;
+            } else if (!ignoreBlock) {
                 finalDamage = 0;
             } else {
                 finalDamage = finalDamage * 2;

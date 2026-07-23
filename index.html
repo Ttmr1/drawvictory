@@ -225,6 +225,7 @@
 
 <script src="attack.js"></script>
 <script src="battle.js"></script>
+<script src="bgm.js"></script>
 
 <div id="configModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); z-index: 99999; justify-content: center; align-items: center;">
     <div style="background: #2b2b36; padding: 25px; border-radius: 8px; width: 320px; text-align: center; border: 2px solid #53354a; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.5); box-sizing: border-box;">
@@ -242,6 +243,13 @@
             <button onclick="saveAndTestAlert()" style="width: 100%; margin-top: 10px; padding: 8px; background: #53354a; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
                 設定をテスト表示
             </button>
+        </div>
+
+
+	<div style="margin-bottom: 25px; text-align: left;">
+            <div style="font-size: 13px; margin-bottom: 8px; color: #ccc;">🎵 BGM音量: <span id="bgmVolumeVal">50</span>%</div>
+            <input type="range" id="bgmVolumeRange" min="0" max="100" value="50" style="width: 100%; cursor: pointer;"
+                   oninput="document.getElementById('bgmVolumeVal').innerText = this.value; if (typeof setBgmVolume === 'function') setBgmVolume(parseInt(this.value));">
         </div>
 
 
@@ -263,6 +271,7 @@
         <p>到達階層：<span id="gameOverFloor">1</span>F</p>
 
         <p>所持金：<span id="gameOverGold">0</span>G</p>
+        <p>スコア：<span id="gameOverScore">0</span>点</p>
 
         <div style="margin-top:25px;">
             <button onclick="showMapDeckManager()">
@@ -289,6 +298,7 @@
         <p>到達階層：<span id="gameClearFloor">1</span>F</p>
 
         <p>所持金：<span id="gameClearGold">0</span>G</p>
+        <p>スコア：<span id="gameClearScore">0</span>点</p>
 
         <div style="margin-top:25px;">
             <button onclick="showMapDeckManager()">

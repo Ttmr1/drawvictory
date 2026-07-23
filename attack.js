@@ -86,7 +86,7 @@ const adrenalineBonus = player.status.adrenalineAtk || 0;
 //貫通：敵の防御値を無視して〇ダメージ
     if (card.type === "pierceAttack") {
 	card.value=card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
-        damageEnemy(card.value, true); // ignoreBlock=true で防御を無視
+        damageEnemy(card.value, true, true); // ignoreBlock=true で防御を無視、isPierce=true で免疫判定用に明示
 
         // 🗿 Golemは防御を無視されると反撃してくる
         if (enemy.data && enemy.data.name === "Golem") {
