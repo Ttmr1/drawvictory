@@ -812,7 +812,7 @@ function checkDeckOverflowAndManage() {
 }
 
 // ★ マップ画面からデッキ一覧を表示・確認するためのカスタム関数
-function showMapDeckManager() {
+function showMapDeckManager(fromBattle = false) {
     const rewardScreen = document.getElementById("rewardScreen");
     const rewardTitle = document.getElementById("rewardTitle");
     const rewardArea = document.getElementById("rewardCards");
@@ -877,7 +877,11 @@ function showMapDeckManager() {
                 // 通常時の「戻る」処理
                 rewardScreen.style.display = "none";
                 rewardScreen.style.zIndex = ""; 
-                if(typeof openMap === 'function') openMap();
+                if (fromBattle) {
+                    // 戦闘中のメニューから開いた場合は、マップ遷移せずそのまま戦闘画面に戻る
+                } else if(typeof openMap === 'function') {
+                    openMap();
+                }
             }
         };
     }

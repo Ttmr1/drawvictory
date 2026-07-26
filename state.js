@@ -16,7 +16,7 @@ window.lastPlayedCard = {
 window.comboActive = false; // 現在のカードがコンボ条件を満たしているか
 
 if (localStorage.getItem("mini_spire_area_effect") === null) {
-    window.isAreaEffectEnabled = true; // 初回（データがない時）はデフォルトON
+    window.isAreaEffectEnabled = false; // 初回（データがない時）はデフォルトOFF
 } else {
     // 文字列として保存されている "true" / "false" をブール値に変換して代入
     window.isAreaEffectEnabled = localStorage.getItem("mini_spire_area_effect") === "true";
@@ -106,6 +106,42 @@ function restartGame() {
 }
 
 
+function openBattleMenu() {
+    const menuScreen = document.getElementById("menuScreen");
+    if (!menuScreen) return;
+
+    menuScreen.innerHTML = `
+        <div class="battle-menu-container" style="background: #1a1a1a; color: #fff; padding: 25px; border-radius: 8px; width: 280px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); position: relative;">
+            <h2 style="margin-top: 0; text-align: center; border-bottom: 2px solid #00adb5; padding-bottom: 10px; font-size: 18px;">☰ メニュー</h2>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                <button onclick="closeBattleMenu(); openMenuPopup();" style="padding: 12px; background: #00adb5; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">📜 説明書</button>
+                <button onclick="closeBattleMenu(); toggleConfigModal();" style="padding: 12px; background: #4e5d6c; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">⚙️ ゲーム設定</button>
+                <button onclick="closeBattleMenu(); showMapDeckManager(true);" style="padding: 12px; background: #53354a; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">📖 デッキ一覧</button>
+                <button onclick="battleMenuReturnToTitle();" style="padding: 12px; background: #e43f5a; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">🏠 スタート画面</button>
+            </div>
+
+            <button onclick="closeBattleMenu()" style="position: absolute; top: 15px; right: 15px; background: #555; color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold;">✕ 閉じる</button>
+        </div>
+    `;
+
+    menuScreen.style.display = "flex";
+    menuScreen.style.zIndex = "99999";
+}
+
+function closeBattleMenu() {
+    const menuScreen = document.getElementById("menuScreen");
+    if (menuScreen) menuScreen.style.display = "none";
+}
+
+function battleMenuReturnToTitle() {
+    // 戦闘中の進行状況が失われるため確認を挟む
+    if (confirm("スタート画面に戻ります。現在の進行状況は失われますが、よろしいですか？")) {
+        closeBattleMenu();
+        returnToTitle();
+    }
+}
+
 function openMenuPopup() {
     const menuScreen = document.getElementById("menuScreen");
     if (!menuScreen) return;
@@ -122,8 +158,7 @@ function openMenuPopup() {
                 <button onclick="switchMenuTab('battle')" class="tab-btn" id="tab-field" style="padding: 8px 12px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">⚔️ 戦闘について</button>
                 <button onclick="switchMenuTab('map')" class="tab-btn" id="tab-map" style="padding: 8px 12px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">🗺️ マップ</button>
                 <button onclick="switchMenuTab('cards')" class="tab-btn" id="tab-status" style="padding: 8px 12px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">🎴 カード一覧</button>
-                <button onclick="switchMenuTab('credit')" class="tab-btn" id="tab-status" style="padding: 8px 12px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">🎮 クレジット</button>
-
+                <button onclick="switchMenuTab('credit')" class="tab-btn" id="tab-status" style="padding: 8px 12px; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; white-space: nowrap;">♫ クレジット</button>
             </div>
 
             <!-- 説明文が切り替わるコンテンツエリア -->
@@ -322,18 +357,6 @@ function switchMenuTab(tabName) {
                     レアリテはcommon、uncommon、<span style="color: lightblue;">rare</span>、<span style="color: yellow;">legend</span>、<span style="color: purple;">space</span>があります。</p>
 		<p>カードを強化することでレアリティを1段階挙げることが出来ます。</p>
 		<p>commonまたはuncommonは<span style="color: lightblue;">rare</span>に、<span style="color: lightblue;">rare</span>は<span style="color: yellow;">legend</span>に、<span style="color: yellow;">legend</span>は<span style="color: purple;">space</span>に強化できますが、すべてのカードが<span style="color: purple;">space</span>まで強化できるとは限りません。</p>
-		</div>
-            </div>
-
-            <div class="rule-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="const detail = this.nextElementSibling; const isOpen = detail.style.display === 'block'; detail.style.display = isOpen ? 'none' : 'block'; this.classList.toggle('active'); if(!isOpen) { setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50); }" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>🅿スコアについて</span>
-                </div>
-                <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    ゲームオーバーまたはゲームクリア時にスコアが表示されます。</p>
-		<p>点数配分としては</p>
-		<p><strong>(デッキのカード枚数×5)+(残りのHP(%)×3)+(所持金×0.5)+(現在の階層×5)-355</strong></p>
-		<p>さらにボーナスとして、20階と40階のボスを倒すと+200と+400がそれぞれ加算されます。</p>
 		</div>
             </div>
 
@@ -813,7 +836,7 @@ function switchMenuTab(tabName) {
                `<h3>マップはランダムに3から4つの分岐が生成され、プレイヤーは進路を自分で選択して進む。</h3>` +
                `<hr style='border:1px solid rgba(255,255,255,0.1); margin:10px 0;'>` +
                `<p><strong>⚔️ 戦闘 (Battle)</strong>:<br>` +
-               `通常の敵、または階層に応じた強敵と戦います。勝利するとゴールドを獲得し、新しいカードをデッキに加えることができます。</p>` +
+               `通常の敵、または階層に応じた強敵と戦います。勝利するとゴールドを獲得し、新しいカードをデッキに加えることができます。<strong>20階</strong>と<strong>40階</strong>ではボスと戦闘になります。</p>` +
                `<p><strong>🛒 ショップ (Shop)</strong>:<br>` +
                `所持金（ゴールド）を消費して、ランダムに並んだカード、フィールド効果、ポーションを購入できます。最大2つまで購入可能です。低確率でセールがあり、100G 引きで購入可能。</p>` +
                `<p><strong>🌌 闇市 (Dark Market)</strong>:<br>` +
@@ -827,15 +850,18 @@ function switchMenuTab(tabName) {
     }
 
     if (tabName === 'credit') {
-        html = `<h2>🗺️ BGM/音楽</h2>
-		<h3>フリーBGM</h3>
-               <a href="https://youtu.be/_UBvat9aFgI?si=L4cHjoTJezIhvS6a"
-   target="_blank"  style="color: lightblue;" 
-   rel="noopener noreferrer">
-    last stand / Tak_mfk
-</a>`;
+        html = `<h2>♫ 使用した音楽</h2>
+               <a href="https://youtu.be/NrNGkKSOQ50?si=hw1GZrkc3SIxuKpQ" target="_blank" rel="noopener noreferrer" style="color: white;">404:フリーズ・コード / Tak_mfk</a><br>
+               <a href="https://youtu.be/QomI2uLN1ek?si=wmria1JFiTMQYPcI" target="_blank" rel="noopener noreferrer" style="color: white;">water's pride / EigHt</a><br>
+               <a href="https://youtu.be/u6RutQOpKo4?si=S81RYy1GItTGXTPZ" target="_blank" rel="noopener noreferrer" style="color: white;">Alone / nons works</a><br>
+               <a href="https://youtu.be/G1m8oiD4QIQ?si=xHYezZqrecTdSzMu" target="_blank" rel="noopener noreferrer" style="color: white;">Combat March / nons works</a><br>
+               <a href="https://youtu.be/43RngsPIUuU?si=LvBUCqxv2gKG0Vwz" target="_blank" rel="noopener noreferrer" style="color: white;">Crystal brilliance / Tak_mfk</a><br>
+               <a href="https://youtu.be/rSlyxTcpH2I?si=NFmcnxV5ObBPyDcB" target="_blank" rel="noopener noreferrer" style="color: white;">Glacial brilliance / Tak_mfk</a><br>
+               <a href="https://youtu.be/GN9uXvp4fKg?si=eZ0Nwi8ZRS_pLwjB" target="_blank" rel="noopener noreferrer" style="color: white;">メランコリックシンドローム / EigHt</a><br>
+               <a href="https://youtu.be/sa7XKGc0H_I?si=16iQVOD2g9tzmF7Z" target="_blank" rel="noopener noreferrer" style="color: white;">絶望から見いだした希望 / non works</a><br>
+               <a href="https://youtu.be/VprPkuTwCGM?si=wU5zqzt9PsoiOucu" target="_blank" rel="noopener noreferrer" style="color: white;">嘆きのダークローズ / EigHt</a><br>
+               <a href="https://youtu.be/OvyjabhA38s?si=MDJqvWAqfWALbiDu" target="_blank" rel="noopener noreferrer" style="color: white;">不思議の国のアリス症候群 / EigHt</a><br>`;
     }
-
 
     contentDiv.innerHTML = html;
 }

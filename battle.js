@@ -1381,22 +1381,15 @@ function continueFromGameSave(){
     if (typeof openMap === 'function') openMap();
 }
 
-//スコア計算
 function calculateScore() {
     const deckCount = deck.length;
     const hpPercent = player.maxHp > 0 ? Math.floor((player.hp / player.maxHp) * 100) : 0;
     const gold = player.gold || 0;
 
-    let score = (deckCount * 5) + (hpPercent * 3) + (gold * 0.5) + (floor * 5);
+    let score = (deckCount * 3) + (hpPercent * 2) + (gold * 0.5) + floor;
 
-    if (floor >= 20) score += 200;
-    if (floor >= 40) {
-        score += 400;
-    }
-    
-    score -= 335;
-    // スコアが0未満にならないようにする
-    score = Math.max(0, score);
+    if (floor >= 20) score += 120;
+    if (floor >= 40) score += 140;
 
     return Math.floor(score);
 }
