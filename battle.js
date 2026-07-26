@@ -71,6 +71,10 @@ function startBattle(){
 
     window.inBattle = true;
 
+    // 使用禁止カテゴリ・禁止解除の効果を新しい戦闘のためにリセット
+    window.witchBannedCategory = null;
+    window.banImmunityTurns = 0;
+
     // 💡 霧エリア等の計算用に、元の最大エネルギーをここで一時保存しておく
     window.originalMaxEnergy = player.maxEnergy;
 
@@ -338,17 +342,6 @@ function playCard(index){
         }
     }
 
-    // ⏰ Timer: atk/rec/abn/blkカードの効果を1ターン遅らせる（handSacrificeはhand参照が壊れるため即時実行）
-    const timerDelayCats = ["atk", "rec", "abn", "blk"];
-    if (enemy.data && enemy.data.name === "Timer" && timerDelayCats.includes(card.cat) && card.type !== "handSacrifice") {
-        enemy.status.timerQueue = enemy.status.timerQueue || [];
-        enemy.status.timerQueue.push(card);
-        customAlert(`⏰ 時が歪み、「${card.name}」の効果は次のターンに持ち越された…`);
-    } else {
-        // 効果発動
-        executeCardEffect(card, index);
-    }
-
     // 📉 過労：状態が有効な間、カードを1枚使うたびに2ダメージを受ける
     if (player.status.fatigue > 0 && inBattle) {
         player.hp -= 2;
@@ -588,10 +581,7 @@ if(enemy.data.name==="Trait"){
     // プレイヤーのその他状態異常の残りターン減少
     if (player.status.immaturity > 0) player.status.immaturity--;
     if (player.status.fatigue > 0) player.status.fatigue--;
-    if (player.status.meditation > 0) {
-        player.status.meditation--;
-        if (player.status.meditation === 0) customAlert("🧘 瞑想の効果が切れた。");
-    }
+    if (player.status.meditation > 0) player.status.meditation--;
 
     if(player.status.healTurns > 0){
         player.status.healTurns--;
@@ -700,12 +690,19 @@ if (enemy.data && enemy.data.name === "Greedy") {
             player.status.amnesia = 1;
             if (typeof renderHand === 'function') renderHand(); // 手札を即座に「？」に更新
         }
-        
-        const categories = ["atk", "blk", "rec", "abn"];
-        window.witchBannedCategory = categories[Math.floor(Math.random() * categories.length)];
-        
-        const catNames = { atk: "攻撃", blk: "ブロック", rec: "回復", abn: "状態異常" };
-        customAlert(`🧙‍♂️次ターンは【${catNames[window.witchBannedCategory] }】系のカードが使用禁止！`);
+
+        if (window.banImmunityTurns > 0) {
+            // 禁止解除カードの効果中は再禁止されない
+            window.witchBannedCategory = null;
+            window.banImmunityTurns--;
+            customAlert(`✨ 禁止解除の効果で、魔女の呪いを無効化した！（残り${window.banImmunityTurns}ターン）`);
+        } else {
+            const categories = ["atk", "blk", "rec", "abn"];
+            window.witchBannedCategory = categories[Math.floor(Math.random() * categories.length)];
+
+            const catNames = { atk: "攻撃", blk: "ブロック", rec: "回復", abn: "状態異常" };
+            customAlert(`🧙‍♂️次ターンは【${catNames[window.witchBannedCategory] }】系のカードが使用禁止！`);
+        }
     } else if (!enemy.data || (enemy.data.name !== "Witch" && enemy.data.name !== "Magica") || enemy.hp <= 0) {
         // 魔女がいない、または倒された時は禁止を解除
         window.witchBannedCategory = null;
@@ -719,12 +716,18 @@ if (enemy.data && enemy.data.name === "Greedy") {
 	}
         player.status.leak = 1;
 
+        if (window.banImmunityTurns > 0) {
+            // 禁止解除カードの効果中は再禁止されない
+            window.witchBannedCategory = null;
+            window.banImmunityTurns--;
+            customAlert(`✨ 禁止解除の効果で、マギカの呪いを無効化した！（残り${window.banImmunityTurns}ターン）`);
+        } else {
+            const categories = ["atk", "blk", "rec", "abn"];
+            window.witchBannedCategory = categories[Math.floor(Math.random() * categories.length)];
 
-        const categories = ["atk", "blk", "rec", "abn"];
-        window.witchBannedCategory = categories[Math.floor(Math.random() * categories.length)];
-        
-        const catNames = { atk: "攻撃", blk: "ブロック", rec: "回復", abn: "状態異常" };
-        customAlert(`🔮次ターンは【${catNames[window.witchBannedCategory] }】系のカードが使用禁止！`);
+            const catNames = { atk: "攻撃", blk: "ブロック", rec: "回復", abn: "状態異常" };
+            customAlert(`🔮次ターンは【${catNames[window.witchBannedCategory] }】系のカードが使用禁止！`);
+        }
     } else if (!enemy.data || (enemy.data.name !== "Witch" && enemy.data.name !== "Magica") || enemy.hp <= 0) {
         window.witchBannedCategory = null;
     }
@@ -821,24 +824,6 @@ if (enemy.data && enemy.data.name === "Greedy") {
             // 🔮 攻撃予知の効果はここで消費する（1ターンのみ有効）
             if (enemy.status.predictTurns > 0) {
                 enemy.status.predictTurns--;
-            }
-
-            // ⏰ Timer：持ち越されたカード効果は次のターン（2ターン目以降）にここで発動する
-            if (enemy.data && enemy.data.name === "Timer" && window.battleTurnCount > 1 && enemy.status.timerQueue && enemy.status.timerQueue.length > 0) {
-                const queue = enemy.status.timerQueue;
-                enemy.status.timerQueue = [];
-                customAlert(`⏰ 歪んでいた時間が戻り、${queue.length}枚のカード効果が発動した！`);
-                queue.forEach(queuedCard => {
-                    if (typeof executeCardEffect === 'function') executeCardEffect(queuedCard, -1);
-                });
-                if (enemy.hp <= 0) {
-                    enemy.hp = 0;
-                    if (!tryPhoenixRevive()) {
-                        if (endTurnBtn) endTurnBtn.disabled = false;
-                        victory();
-                        return;
-                    }
-                }
             }
 
             // 防御値（ブロック）計算
@@ -998,7 +983,6 @@ if (enemy.data && enemy.data.name === "Greedy") {
     // ⚡ id:1514「次ターンにエネルギー+2」の予約分を消費
     if (player.status.nextTurnEnergyBonus > 0) {
         player.energy += player.status.nextTurnEnergyBonus;
-        customAlert(`⚡ 予約されていたエネルギー+${player.status.nextTurnEnergyBonus}が発動！`);
         player.status.nextTurnEnergyBonus = 0;
     }
 
@@ -1312,7 +1296,7 @@ function usePotion(slotIndex) {
         window.vesselDrinkCount = (window.vesselDrinkCount || 0) + 1;
         if (window.vesselDrinkCount >= 2) {
             window.maxPotionSlots = (window.maxPotionSlots || 1) + 1;
-            customAlert(`🏺 器のポーションを2回飲み干した！ポーションスロットが1つ増えた！(現在:${window.maxPotionSlots}個)`);
+            customAlert(`🏺 器のポーションを2回飲み干し、ポーションスロットが1つ増えた！`);
         } else {
             customAlert(`🏺 器のポーションを飲んだ…あと${2 - window.vesselDrinkCount}回でスロットが増えそうだ。`);
         }

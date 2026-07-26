@@ -189,7 +189,7 @@ function saveAndTestAlert() {
     localStorage.setItem("alert_display_time", time);
     
     // テスト表示
-    const testMsg = time == 0 ? "アラートは表示されません" : `表示時間は ${time} 秒です`;
+    const testMsg = time == 0 ? "アラートは表示されません" : `表示時間: ${time} 秒`;
     customAlert(testMsg, time);
 }
 

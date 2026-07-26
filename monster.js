@@ -148,7 +148,7 @@ function applyVoidTurnEffect() {
     }
 
     if (discarded > 0) {
-        customAlert(`🌑 Voidの侵食！過労が付与され、手札が${discarded}枚捨て札に送られた！`);
+        customAlert(`🌑 Voidの侵食！過労が付与&手札が${discarded}枚捨て札に送られた！`);
     } else {
         customAlert(`🌑 Voidの侵食！過労が付与された！`);
     }
