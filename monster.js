@@ -65,7 +65,7 @@ function initEnemyStatus() {
         player.darkMarketCount = 0;
         
 	type = pool[Math.floor(Math.random() * pool.length)];
-	type = "trait";	
+	//type = "trait";	
 //1階はエリアなし
 	window.currentArea = "none";
     }
