@@ -208,6 +208,13 @@ console.log(enemy.status.traits);
         window.savedDecks[slot][0] = (window.savedDecks[slot][0] || 0) + 5;
     }
 
+    // 👁️‍🗨️ Sight: 呪いカードを5枚デッキに追加する（Reaper/Undollと違い、倒しても削除されず残り続ける）
+    if (enemy.data && enemy.data.name === "Sight") {
+        const slot = window.currentSlot || 0;
+        if (!window.savedDecks[slot]) window.savedDecks[slot] = {};
+        window.savedDecks[slot][0] = (window.savedDecks[slot][0] || 0) + 5;
+    }
+
     if (typeof initBattleDeck === 'function') {
         initBattleDeck();
     }
@@ -216,6 +223,9 @@ console.log(enemy.status.traits);
 
     // 🌑 Void: 1ターン目から過労を付与し、手札からランダムに2枚捨て札へ送る
     if (typeof applyVoidTurnEffect === 'function') applyVoidTurnEffect();
+
+    // 👁️‍🗨️ Sight: 1ターン目から過労を付与する
+    if (typeof applySightTurnEffect === 'function') applySightTurnEffect();
 
     if(typeof renderHand === 'function') renderHand();
     if(typeof updateUI === 'function') updateUI();
@@ -341,6 +351,10 @@ function playCard(index){
             window.nextCardCopyActive = false; // ここでフラグを消費
         }
     }
+
+        // 効果発動
+        executeCardEffect(card, index);
+
 
     // 📉 過労：状態が有効な間、カードを1枚使うたびに2ダメージを受ける
     if (player.status.fatigue > 0 && inBattle) {
@@ -581,7 +595,10 @@ if(enemy.data.name==="Trait"){
     // プレイヤーのその他状態異常の残りターン減少
     if (player.status.immaturity > 0) player.status.immaturity--;
     if (player.status.fatigue > 0) player.status.fatigue--;
-    if (player.status.meditation > 0) player.status.meditation--;
+    if (player.status.meditation > 0) {
+        player.status.meditation--;
+        if (player.status.meditation === 0) customAlert("🧘 瞑想の効果が切れた。");
+    }
 
     if(player.status.healTurns > 0){
         player.status.healTurns--;
@@ -845,11 +862,6 @@ if (enemy.data && enemy.data.name === "Greedy") {
             }
             damage = Math.floor(damage * styleInfo.atkRate);
 
-            // ⏰ Timer：最初のターンは攻撃してこない
-            if (enemy.data && enemy.data.name === "Timer" && window.battleTurnCount === 1) {
-                damage = 0;
-                logText += `<div style="color:#aaa;">⏰ Timerは様子をうかがい、攻撃してこなかった。</div>`;
-            }
 
             if(enemy.data && enemy.data.name === "Beast"){
                 if(!window.beastDamagedThisTurn){ damage *= 2; logText += `<div style="color:#ff4141;">🦁 獣が怒り狂って攻撃力2倍！</div>`; }
@@ -983,6 +995,7 @@ if (enemy.data && enemy.data.name === "Greedy") {
     // ⚡ id:1514「次ターンにエネルギー+2」の予約分を消費
     if (player.status.nextTurnEnergyBonus > 0) {
         player.energy += player.status.nextTurnEnergyBonus;
+        customAlert(`⚡ 予約されていたエネルギー+${player.status.nextTurnEnergyBonus}が発動！`);
         player.status.nextTurnEnergyBonus = 0;
     }
 
@@ -1015,6 +1028,9 @@ if (enemy.data && enemy.data.name === "Greedy") {
     // 🌑 Void: 毎ターン過労を付与し、手札からランダムに2枚捨て札へ送る
     if (typeof applyVoidTurnEffect === 'function') applyVoidTurnEffect();
 
+    // 👁️‍🗨️ Sight: 毎ターン過労を付与する
+    if (typeof applySightTurnEffect === 'function') applySightTurnEffect();
+
     if(typeof renderHand === 'function') renderHand();
     if(typeof updateUI === 'function') updateUI();
 
@@ -1024,6 +1040,9 @@ if (enemy.data && enemy.data.name === "Greedy") {
 function victory(){
     inBattle = false;
     window.witchBannedCategory = null;
+
+    // スコア計算用：撃破した敵の数をカウント
+    window.enemiesDefeatedCount = (window.enemiesDefeatedCount || 0) + 1;
 
 
     if (player.status) {
@@ -1296,7 +1315,7 @@ function usePotion(slotIndex) {
         window.vesselDrinkCount = (window.vesselDrinkCount || 0) + 1;
         if (window.vesselDrinkCount >= 2) {
             window.maxPotionSlots = (window.maxPotionSlots || 1) + 1;
-            customAlert(`🏺 器のポーションを2回飲み干し、ポーションスロットが1つ増えた！`);
+            customAlert(`🏺 器のポーションを2回飲み干した！ポーションスロットが1つ増えた！(現在:${window.maxPotionSlots}個)`);
         } else {
             customAlert(`🏺 器のポーションを飲んだ…あと${2 - window.vesselDrinkCount}回でスロットが増えそうだ。`);
         }
@@ -1369,13 +1388,16 @@ function calculateScore() {
     const deckCount = deck.length;
     const hpPercent = player.maxHp > 0 ? Math.floor((player.hp / player.maxHp) * 100) : 0;
     const gold = player.gold || 0;
+    const enemiesDefeated = window.enemiesDefeatedCount || 0;
 
-    let score = (deckCount * 3) + (hpPercent * 2) + (gold * 0.5) + floor;
+    let score = (deckCount * 10) + (hpPercent * 2.5) + (gold * 0.25) + (enemiesDefeated * 10);
 
-    if (floor >= 20) score += 120;
-    if (floor >= 40) score += 140;
+    if (floor >= 2) score += 50;
+    if (floor >= 20) score += 100;
+    if (floor >= 40) score += 200;
+    score = score - 405;
 
-    return Math.floor(score);
+    return Math.max(0, Math.floor(score));
 }
 
 function gameover() {

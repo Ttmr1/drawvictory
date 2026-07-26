@@ -341,8 +341,8 @@ const allCardsMaster = [
 { id: 1515, name: "幸先の一手", cost: 1, desc: "1ターン目かつ最初に使用すればカードを3枚引く", type: "firstCardDraw", value: 3, rarity: "uncommon", cat: "oth", isInitial: false },
 { id: 2515, name: "幸先の一手", cost: 0, desc: "1ターン目かつ最初に使用すればカードを3枚引く", type: "firstCardDraw", value: 3, rarity: "rare", cat: "oth", isInitial: false },
 
-{ id: 1516, name: "禁止解除", cost: 3, desc: "使用禁止カードを全て解除する(魔女やマギカなど)。1ターンの間、再度禁止されない", type: "cancelBan", duration: 1, rarity: "uncommon", cat: "oth", isInitial: false },
-{ id: 2516, name: "禁止解除", cost: 5, desc: "使用禁止カードを全て解除する(魔女やマギカなど)。2ターンの間、再度禁止されない", type: "cancelBan", duration: 2, rarity: "rare", cat: "oth", isInitial: false },
+{ id: 1516, name: "禁止解除", cost: 3, desc: "使用禁止カードを全て解除する。1ターン", type: "cancelBan", duration: 1, rarity: "uncommon", cat: "oth", isInitial: false },
+{ id: 2516, name: "禁止解除", cost: 5, desc: "使用禁止カードを全て解除する。2ターン", type: "cancelBan", duration: 2, rarity: "rare", cat: "oth", isInitial: false },
 
 
 // ==========================================
@@ -793,6 +793,7 @@ function checkValidation() {
 }
 function pressStartGame() {
     player.darkMarketCount = 0;
+    window.enemiesDefeatedCount = 0; // スコア計算用の撃破数カウンターをリセット
     const startScreen = document.getElementById("startScreen");
     if (startScreen) startScreen.style.display = "none";
     if (typeof restartGame === 'function') restartGame();

@@ -29,6 +29,7 @@ const enemyTypes = {
     bastion:  { name:"Bastion",   icon:"💠", hpRate:0.85, atkRate:0.85, blockRate:1.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     gunner:   { name:"Gunner",    icon:"🔫", hpRate:0.90, atkRate:0.90, blockRate:0.90, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     void:     { name:"Void",      icon:"🌑", hpRate:0.95, atkRate:0.85, blockRate:0.85, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
+    sight:    { name:"Sight",     icon:"👁️‍🗨️", hpRate:0.75, atkRate:0.60, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, neverFreeze:true, physicalResist:0.5, rewardGold: 200 },
 
 
 //ボス
@@ -48,7 +49,7 @@ const enemyTypes = {
 function initEnemyStatus() {
 
     //const pool = ["robot"]
-    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait","bastion","gunner","void"];
+    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait","bastion","gunner","void","sight"];
 
 // ─── 敵の種類の選定 ───
 
@@ -63,10 +64,9 @@ function initEnemyStatus() {
     else if (floor === 1) {
         // 1階はゴブリン固定
         player.darkMarketCount = 0;
-        
+        //type = "void";
 	type = pool[Math.floor(Math.random() * pool.length)];
-	//type = "trait";	
-//1階はエリアなし
+	//1階はエリアなし
 	window.currentArea = "none";
     }
     else {
@@ -148,10 +148,18 @@ function applyVoidTurnEffect() {
     }
 
     if (discarded > 0) {
-        customAlert(`🌑 Voidの侵食！過労が付与&手札が${discarded}枚捨て札に送られた！`);
+        customAlert(`🌑 Voidの侵食！過労が付与され、手札が${discarded}枚捨て札に送られた！`);
     } else {
         customAlert(`🌑 Voidの侵食！過労が付与された！`);
     }
+}
+
+// 👁️‍🗨️ Sight：毎ターン、プレイヤーに過労を付与する（手札破壊はない）
+function applySightTurnEffect() {
+    if (!(window.inBattle && enemy.data && enemy.data.name === "Sight")) return;
+
+    player.status.fatigue = 1;
+    customAlert(`👁️‍🗨️ Sightの視線！過労が付与された！`);
 }
 
 // =========================================================================
@@ -244,6 +252,14 @@ function damageEnemy(amount, ignoreBlock = false, isPierce = false) {
             if (isOddTurn) {
                 // 奇数ターンは攻撃しない
                 enemy.atkRate=0;
+            }
+        }
+
+        // ④ 👁️‍🗨️ Sight の特性：物理攻撃（通常攻撃・貫通）によるダメージを半分にする
+        //    （毒・火傷など状態異常由来のダメージは対象外）
+        if (enemy.data.physicalResist && enemy.data.physicalResist < 1) {
+            if (!ignoreBlock || isPierce) {
+                finalDamage = Math.floor(finalDamage * enemy.data.physicalResist);
             }
         }
 

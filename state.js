@@ -699,6 +699,20 @@ function switchMenuTab(tabName) {
                 </div>
             </div>
 
+            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>Sight 👁️‍🗨️</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <strong style="color: #00adb5;">【呪い付与・物理半減・凍結耐性】</strong>
+                        <span style="color: gold;">200G</span>
+                    </div>
+                </div>
+                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    出現時にデッキへ「呪い」カードを5枚追加する。この呪いカードはSightを倒した後もデッキに残り続ける。毎ターン、プレイヤーに「過労」状態を付与する。凍結状態・絶対零度状態を無効化する。物理攻撃によるダメージを半分に軽減する。
+                </div>
+            </div>
+
+
 
 
 

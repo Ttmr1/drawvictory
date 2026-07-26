@@ -93,6 +93,7 @@ const adrenalineBonus = player.status.adrenalineAtk || 0;
             const counterDmg = 6;
             player.hp = Math.max(0, player.hp - counterDmg);
             if (typeof createDamagePopup === 'function') createDamagePopup(counterDmg, false);
+            customAlert(`🗿 Golemの反撃！防御を無視された怒りでプレイヤーに ${counterDmg} ダメージ！`);
             if (player.hp <= 0) gameover();
         }
     }
@@ -364,9 +365,13 @@ while (isHitting && count < 10) {
 //凍結〇+〇ダメージ
     if (card.type === "freezeAttack") {
         if (!enemy.data.immuneStatus) {
-            // 絶対零度状態の間は凍結を受け付けない
-            if (!(enemy.status.absoluteZeroTurns > 0)) {
+            // 絶対零度状態の間、または凍結を受け付けない特性(neverFreeze)を持つ敵には凍結しない
+            if (enemy.data.neverFreeze) {
+                customAlert("👁️‍🗨️ 敵は凍結を受け付けない…");
+            } else if (!(enemy.status.absoluteZeroTurns > 0)) {
                 enemy.status.freeze = card.status;
+            } else {
+                customAlert("❄️ 敵は絶対零度状態のため、凍結は効果がなかった…");
             }
 	    damageEnemy(card.value);
         }
@@ -458,8 +463,11 @@ if (card.type === "buffMeditation") {
 //絶対零度状態を付与する。※凍結状態でなければ不発（何も起こらない）。成立時は凍結を解除する
 if (card.type === "grantAbsoluteZero") {
         if (enemy.data && enemy.data.immuneStatus) {
+            customAlert("敵は状態異常無効のため、絶対零度は効果がなかった…");
+        } else if (enemy.data && enemy.data.neverFreeze) {
+            customAlert("👁️‍🗨️ 敵は凍結・絶対零度を無効化する…");
         } else if (!(enemy.status.freeze > 0)) {
-            customAlert("❄️ 絶対零度は敵が凍結状態ではないため不発!");
+            customAlert("❄️ 絶対零度は敵が凍結状態ではないため不発に終わった…");
         } else {
             let turns = card.turn || 1;
             if (card.bonusChance && Math.random() < card.bonusChance) {
@@ -467,6 +475,7 @@ if (card.type === "grantAbsoluteZero") {
             }
             enemy.status.absoluteZeroTurns = (enemy.status.absoluteZeroTurns || 0) + turns;
             enemy.status.freeze = 0; // 絶対零度が成立したので凍結は解除する
+            customAlert(`❄️ 絶対零度！敵の凍結を解除し、絶対零度状態を付与した！(${turns}T)`);
         }
         if (typeof updateUI === 'function') updateUI();
     }
@@ -474,7 +483,11 @@ if (card.type === "grantAbsoluteZero") {
 
 //敵を凍結状態にしてから絶対零度状態を付与する。絶対零度が成立した時点で凍結は解除される
 if (card.type === "freezeThenAbsoluteZero") {
-        if (!enemy.data.immuneStatus) {
+        if (enemy.data && enemy.data.immuneStatus) {
+            customAlert("敵は状態異常無効のため、凍結・絶対零度は効果がなかった…");
+        } else if (enemy.data && enemy.data.neverFreeze) {
+            customAlert("👁️‍🗨️ 敵は凍結・絶対零度を無効化する…");
+        } else {
             enemy.status.freeze = card.freezeTurn || 1;
 
             let turns = card.turn || 1;
@@ -483,6 +496,7 @@ if (card.type === "freezeThenAbsoluteZero") {
             }
             enemy.status.absoluteZeroTurns = (enemy.status.absoluteZeroTurns || 0) + turns;
             enemy.status.freeze = 0; // 絶対零度が成立したので凍結は解除する
+            customAlert(`❄️ 敵を凍結させ、即座に絶対零度状態へ移行した！(${turns}T)`);
         }
         if (typeof updateUI === 'function') updateUI();
     }
