@@ -69,8 +69,8 @@ function openMap(){
         for (let i = 0; i < nodeCount; i++) {
             let r = Math.random();
             let type = r < 0.45 ? "battle"    // 0.00 ～ 0.45 (45%)バトル
-                     : r < 0.55 ? "shop"      // 0.45 ～ 0.60 (15%)ショップ
-                     : r < 0.75 ? "rest"      // 0.60 ～ 0.80 (20%)休憩所
+                     : r < 0.60 ? "shop"      // 0.45 ～ 0.60 (15%)ショップ
+                     : r < 0.80 ? "rest"      // 0.60 ～ 0.80 (20%)休憩所
                      : "darkshop";	      // 0.80 ～ 1.00 (20%)闇市
 
             if (floor === 19 || floor === 39) {
@@ -95,6 +95,16 @@ function openMap(){
         // 条件をクリア（正常なバラけ方、または全て戦闘）したらループを抜ける
         break;
     }  
+
+    // 💀 エリート抽選：抽選結果に"戦闘"の枠が1つ以上あるとき、10%の確率でそのうちランダムな1つをエリートにする
+    // （ボス直前フロアはnodesが強制的に["battle"]固定なので対象外にする）
+    if (!(floor === 19 || floor === 39)) {
+        const battleIndices = nodes.map((t, i) => t === "battle" ? i : -1).filter(i => i !== -1);
+        if (battleIndices.length > 0 && Math.random() < 0.10) {
+            const pick = battleIndices[Math.floor(Math.random() * battleIndices.length)];
+            nodes[pick] = "elite";
+        }
+    }
 
     if(player.hp<=0){
 	gameover();
@@ -131,6 +141,7 @@ function openMap(){
         
         let icon = "⚔️";
         let label = "戦闘";
+        if(type==="elite"){ icon="💀"; label="エリート"; }
         if(type==="shop"){ icon="💰"; label="ショップ"; }
         if(type==="rest"){ icon="💤"; label="休憩所"; }
         if(type==="darkshop"){ icon="💴"; label="闇市 ";}	
@@ -140,6 +151,12 @@ function openMap(){
         
         node.onclick = () => {
             if(type==="battle"){
+                window.isEliteBattle = false;
+                mapScreen.style.display="none";
+                floor++;
+                startBattle();
+            }else if(type==="elite"){
+                window.isEliteBattle = true;
                 mapScreen.style.display="none";
                 floor++;
                 startBattle();
@@ -869,7 +886,7 @@ const pHpText = document.getElementById("playerHpText");
 
 
     const eHpText = document.getElementById("enemyHpText");
-    if(eHpText) eHpText.innerText = `${enemy.hp} / ${enemy.maxHp}`;
+    if(eHpText) eHpText.innerText = `${enemy.hp.toFixed(1)} / ${enemy.maxHp.toFixed(1)}`;
 
     const eHpBar = document.getElementById("enemyHpBar");
     if(eHpBar) eHpBar.style.width = `${(enemy.hp / enemy.maxHp) * 100}%`;
@@ -909,8 +926,11 @@ if (isOrcBerserk) {
                 uiEnemyAttack.innerText = `⚔️ 攻撃: ${minAtk} ～ ${maxAtk}`;
 		if(enemy.data && enemy.data.name === "Ork" && enemy.hp <= (enemy.maxHp * 0.5)){
 		    uiEnemyAttack.innerText = `⚔️ 攻撃: ${minAtk*2} ～ ${maxAtk*2}`;
-}
+		}
                 uiEnemyAttack.style.color = "#a0c0ff"; 
+            } 
+            else if (isAbsoluteZero) {
+                uiEnemyAttack.style.color = "blue"; 
             } 
             else if (enemy.data && enemy.data.name === "Ork" && enemy.hp <= (enemy.maxHp * 0.5)) {
                 // 【オークのピンチ時特性】名前が "Ork" かつ HP50%以下の時
@@ -940,17 +960,20 @@ if (isOrcBerserk) {
 
 
     let statusText = "";
-    if(enemy.status.poisonList && enemy.status.poisonList.length > 0) {
-        enemy.status.poisonList.forEach(p => {
-            statusText += `☠️毒:${p.value} (${p.duration}T)<br>`;
-        });
+    const isStatusImmuneForDisplay = typeof isEnemyImmuneToStatusEffects === 'function' && isEnemyImmuneToStatusEffects();
+    if (!isStatusImmuneForDisplay) {
+        if(enemy.status.poisonList && enemy.status.poisonList.length > 0) {
+            enemy.status.poisonList.forEach(p => {
+                statusText += `☠️毒:${p.value} (${p.duration}T)<br>`;
+            });
+        }
+        if(enemy.status.burn > 0) statusText += `🔥火傷:${enemy.status.burn}<br>`;
+        if(enemy.status.freeze > 0) statusText += `❄️凍結:${enemy.status.freeze}T<br>`;
+        if(enemy.status.absoluteZeroTurns > 0) {
+            statusText += `❄️絶対零度:${enemy.status.absoluteZeroTurns}T<br>`;
+        }
+        if(enemy.status.stun > 0 && enemy.data.name !== "Dragon") statusText += `💫スタン状態<br>`; 
     }
-    if(enemy.status.burn > 0) statusText += `🔥火傷:${enemy.status.burn}<br>`;
-    if(enemy.status.freeze > 0) statusText += `❄️凍結:${enemy.status.freeze}T<br>`;
-    if(enemy.status.absoluteZeroTurns > 0) {
-        statusText += `❄️絶対零度:${enemy.status.absoluteZeroTurns}T<br>`;
-    }
-    if(enemy.status.stun > 0 && enemy.data.name !== "Dragon") statusText += `💫スタン状態<br>`; 
     if(enemy.status.behaviorControlled && enemy.status.camouflageTurns > 0) {
         const targetStyle = enemy.status.camouflageTarget || 'super_attack';
         const targetLabels = { super_attack: "超攻撃特化", attack: "攻撃特化", defense: "防御特化", super_defense: "超防御特化" };
@@ -1001,7 +1024,17 @@ if (isOrcBerserk) {
             statusText += `💨回避率 33%<br>`;
         }
 
+        if(enemy.data.name === "Luna"){
+            statusText += `💥物理攻撃半減<br>`;
+	    statusText += `💫スタン状態無効<br>`;
+        }
 
+        if(enemy.data.name === "Sight"){
+            statusText += `💥物理攻撃半減<br>`;
+	    if (typeof isFreezeAndAbsoluteZeroImmune === 'function' && isFreezeAndAbsoluteZeroImmune()) {
+	        statusText += `❄️凍結・絶対零度状態無効<br>`;
+	    }
+        }
 
         if(enemy.data.name === "Slime"){
             statusText += `☠️状態ダメージ2倍<br>`;

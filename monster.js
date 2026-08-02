@@ -1,4 +1,13 @@
 // =========================================================================
+// 🔢 HP計算用ヘルパー：四捨五入・切り上げではなく、常に小数第一位で「切り捨て」る
+// 例: 10.45 → 10.4 / 10.49 → 10.4
+// （浮動小数点の誤差対策として、ごく小さいイプシロンを足してから切り捨てる）
+// =========================================================================
+function truncateToOneDecimal(value) {
+    return Math.floor((value + 1e-9) * 10) / 10;
+}
+
+// =========================================================================
 // 👹 敵データ定義
 // =========================================================================
 const enemyTypes = {
@@ -9,7 +18,7 @@ const enemyTypes = {
     slime:    { name:"Slime",     icon:"🟢", hpRate:1.00, atkRate:1.00, blockRate:0.00, immuneNormal:true , immuneStatus:false, statusDouble:true , rewardGold: 150 },
     fenrir:   { name:"Fenrir",    icon:"🐺", hpRate:0.75, atkRate:0.80, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     zombie:   { name:"Zombie",    icon:"🧟", hpRate:0.75, atkRate:1.00, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
-    golem:    { name:"Golem",     icon:"🗿", hpRate:0.75, atkRate:0.90, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 225 },
+    golem:    { name:"Golem",     icon:"🗿", hpRate:0.75, atkRate:0.90, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, neverPoison:true, rewardGold: 225 },
     spirit:   { name:"Spirit",    icon:"👻", hpRate:0.60, atkRate:1.00, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 225 },
     thief:    { name:"Thief",     icon:"🏴‍☠️", hpRate:0.75, atkRate:1.00, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 125 },
     clown:    { name:"Clown",     icon:"🤡", hpRate:1.25, atkRate:0.00, blockRate:0.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
@@ -28,8 +37,10 @@ const enemyTypes = {
     trait:    { name:"Trait",     icon:"👽", hpRate:0.80, atkRate:0.80, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     bastion:  { name:"Bastion",   icon:"💠", hpRate:0.85, atkRate:0.85, blockRate:1.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     gunner:   { name:"Gunner",    icon:"🔫", hpRate:0.90, atkRate:0.90, blockRate:0.90, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
-    void:     { name:"Void",      icon:"🌑", hpRate:0.95, atkRate:0.85, blockRate:0.85, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
+    bat:     { name:"Bat",        icon:"🦇", hpRate:0.95, atkRate:0.85, blockRate:0.85, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     sight:    { name:"Sight",     icon:"👁️‍🗨️", hpRate:0.75, atkRate:0.60, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, neverFreeze:true, physicalResist:0.5, rewardGold: 200 },
+    luna:     { name:"Luna",      icon:"🌕", hpRate:1.00, atkRate:0.75, blockRate:0.50, immuneNormal:false, immuneStatus:false, statusDouble:false, neverFreeze:true, physicalResist:0.5, neverStun:true, rewardGold: 200 },
+    tempest:  { name:"Tempest",   icon:"🌪️", hpRate:0.85, atkRate:0.90, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
 
 
 //ボス
@@ -49,7 +60,7 @@ const enemyTypes = {
 function initEnemyStatus() {
 
     //const pool = ["robot"]
-    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait","bastion","gunner","void","sight"];
+    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait","bastion","gunner","bat","sight","luna","tempest"];
 
 // ─── 敵の種類の選定 ───
 
@@ -64,8 +75,9 @@ function initEnemyStatus() {
     else if (floor === 1) {
         // 1階はゴブリン固定
         player.darkMarketCount = 0;
-        //type = "void";
+
 	type = pool[Math.floor(Math.random() * pool.length)];
+        //type = "luna";
 	//1階はエリアなし
 	window.currentArea = "none";
     }
@@ -95,16 +107,32 @@ function initEnemyStatus() {
 
     const data = enemyTypes[type];
 
+    // 💀 エリート戦：通常の敵から抽選された内容に対して、攻撃・体力・防御を1.25倍、
+    //    報酬ゴールドを1.5倍（25の倍数に切り捨て）した専用ステータスを適用する
+    const isEliteType = type !== "dragon" && type !== "magica" && type !== "boost";
+    const isElite = !!window.isEliteBattle && isEliteType;
+    window.isEliteBattle = false; // 使用後は必ずリセットしておく（次の戦闘に持ち越さない）
+
+    const effectiveData = isElite
+        ? Object.assign({}, data, {
+            hpRate: data.hpRate * 1.25,
+            atkRate: data.atkRate * 1.25,
+            blockRate: data.blockRate * 1.25,
+            rewardGold: Math.floor((data.rewardGold * 1.5) / 25) * 25,
+            isElite: true
+        })
+        : data;
+
     setTimeout(() => {
         decideEnemyNextStyle();
     }, 50);
 
     // 敵の初期ステータスオブジェクトを作成して返す
     return {
-        data: data,
-        hp: Math.floor(baseHp * data.hpRate * diffRateHp),
-        maxHp: Math.floor(baseHp * data.hpRate * diffRateHp),
-        attack: Math.floor(baseAtk * data.atkRate * diffRateAtk),
+        data: effectiveData,
+        hp: truncateToOneDecimal(baseHp * effectiveData.hpRate * diffRateHp),
+        maxHp: truncateToOneDecimal(baseHp * effectiveData.hpRate * diffRateHp),
+        attack: Math.floor(baseAtk * effectiveData.atkRate * diffRateAtk),
         block: 0,
         status: { 
             poisonList: [], 
@@ -133,9 +161,9 @@ function applyEnemyTurnStartTraits() {
     }
 }
 
-// 🌑 Void：毎ターン、プレイヤーに過労を付与し、手札からランダムに2枚捨て札へ送る
-function applyVoidTurnEffect() {
-    if (!(window.inBattle && enemy.data && enemy.data.name === "Void")) return;
+// 🦇 Bat：毎ターン、プレイヤーに過労を付与し、手札からランダムに2枚捨て札へ送る
+function applyBatTurnEffect() {
+    if (!(window.inBattle && enemy.data && enemy.data.name === "Bat")) return;
 
     player.status.fatigue = 1;
 
@@ -146,12 +174,6 @@ function applyVoidTurnEffect() {
         discardPile.push(discardedCard);
         discarded++;
     }
-
-    if (discarded > 0) {
-        customAlert(`🌑 Voidの侵食！過労が付与され、手札が${discarded}枚捨て札に送られた！`);
-    } else {
-        customAlert(`🌑 Voidの侵食！過労が付与された！`);
-    }
 }
 
 // 👁️‍🗨️ Sight：毎ターン、プレイヤーに過労を付与する（手札破壊はない）
@@ -159,7 +181,30 @@ function applySightTurnEffect() {
     if (!(window.inBattle && enemy.data && enemy.data.name === "Sight")) return;
 
     player.status.fatigue = 1;
-    customAlert(`👁️‍🗨️ Sightの視線！過労が付与された！`);
+}
+
+// 🌕/🌑 Luna：体力が半分より多い間は毎ターン自己回復、半分以下になると1/4で忘却を付与する
+function applyLunaTurnEffect() {
+    if (!(window.inBattle && enemy.data && enemy.data.name === "Luna")) return;
+
+    const isPhase2 = enemy.status.lunaPhase2 || (enemy.hp <= enemy.maxHp / 2);
+
+    if (!isPhase2) {
+        // 🌕 体力が半分より多い間：毎ターン自身の最大HPの5%回復
+        const healAmount = Math.min(enemy.maxHp/20, enemy.maxHp - enemy.hp);
+        if (healAmount > 0) {
+            enemy.hp += healAmount;
+            enemy.hp = truncateToOneDecimal(enemy.hp);
+        }
+    } else {
+        // 🌑 体力が半分以下：1/4の確率でプレイヤーに忘却(手札を隠す)を付与
+        if (Math.random() < (1 / 4)) {
+            player.status.amnesia = 1;
+            if (typeof renderHand === 'function') renderHand();
+        }
+    }
+
+    if (typeof updateUI === 'function') updateUI();
 }
 
 // =========================================================================
@@ -178,9 +223,32 @@ function getEnemyKillRewardGold() {
 }
 
 // =========================================================================
-// 🎯 敵にダメージを与える関数（Phoenix復活 ＆ Spiritターン完全対応版）
+// 🎯 敵にダメージを与える関数
 // =========================================================================
-function damageEnemy(amount, ignoreBlock = false, isPierce = false) {
+// 凍結・絶対零度への耐性判定
+// Sightなどは常時耐性を持つが、Lunaは体力が半分より多い間（フェーズ1）のみ耐性を持ち、
+// フェーズ2（体力半分以下）になると凍結・絶対零度が効くようになる
+function isFreezeAndAbsoluteZeroImmune() {
+    if (!enemy.data || !enemy.data.neverFreeze) return false;
+    if (enemy.data.name === "Luna" && enemy.status && enemy.status.lunaPhase2) {
+        return false; // Lunaはフェーズ2に入ると耐性を失う
+    }
+    return true;
+}
+
+// 🛡️ 物理攻撃無効かどうか（enemyTypesの恒久フラグ、またはTraitのランダム特性の両方を見る）
+function isEnemyImmuneToNormal() {
+    if (!enemy || !enemy.data) return false;
+    return !!enemy.data.immuneNormal || !!(enemy.status && enemy.status.immuneNormal);
+}
+
+// ☠️ 状態異常無効かどうか（enemyTypesの恒久フラグ、またはTraitのランダム特性の両方を見る）
+function isEnemyImmuneToStatusEffects() {
+    if (!enemy || !enemy.data) return false;
+    return !!enemy.data.immuneStatus || !!(enemy.status && enemy.status.immuneStatus);
+}
+
+function damageEnemy(amount, ignoreBlock = false, isPierce = false, cardCat = null) {
     if (!inBattle) return;
 
     // 🐝Bee（蜂）の特性判定：33%の確率で攻撃や状態異常（スリップダメージ等含む）を完全無効化
@@ -215,7 +283,15 @@ function damageEnemy(amount, ignoreBlock = false, isPierce = false) {
 
     // 👻【特性判定】敵の特性（SpiritやSlime）によるダメージの無効・倍率化を最初に行う
     if (enemy.data && finalDamage > 0) {
-        
+
+        // 🛡️ 汎用の物理攻撃無効判定（Traitの「物理無効」特性や、今後追加する immuneNormal:true の敵に対応）
+        //    物理攻撃（ブロックを参照する通常攻撃、または貫通攻撃）のみを無効化し、毒・火傷などのDoTダメージ(ignoreBlock=true)は対象外
+        if (isEnemyImmuneToNormal()) {
+            if (!ignoreBlock || isPierce) {
+                finalDamage = 0;
+            }
+        }
+
         // ① スピリット（Spirit）の特性
         if (enemy.data.name === "Spirit") {
             const isOddTurn = (window.battleTurnCount % 2 !== 0);
@@ -255,14 +331,18 @@ function damageEnemy(amount, ignoreBlock = false, isPierce = false) {
             }
         }
 
-        // ④ 👁️‍🗨️ Sight の特性：物理攻撃（通常攻撃・貫通）によるダメージを半分にする
-        //    （毒・火傷など状態異常由来のダメージは対象外）
-        if (enemy.data.physicalResist && enemy.data.physicalResist < 1) {
-            if (!ignoreBlock || isPierce) {
-                finalDamage = Math.floor(finalDamage * enemy.data.physicalResist);
+        // ④ physicalResist特性：攻撃系(cat:"atk")カードのダメージのみ軽減する
+        //    （ブロック系・回復系・状態異常系カードや、毒・火傷などのDoTダメージは対象外）
+        if (enemy.data.physicalResist && enemy.data.physicalResist < 1 && enemy.data.name === "sight") {
+            if (cardCat === "atk") {
+                finalDamage = truncateToOneDecimal(finalDamage * enemy.data.physicalResist);
             }
         }
-
+        if (enemy.data.physicalResist && enemy.data.physicalResist < 1 && enemy.data.name === "Luna" && !(enemy.status && enemy.status.lunaPhase2)) {
+            if (cardCat === "atk") {
+                finalDamage = truncateToOneDecimal(finalDamage * enemy.data.physicalResist);
+            }
+        }
 
     }
 
@@ -283,6 +363,7 @@ function damageEnemy(amount, ignoreBlock = false, isPierce = false) {
         // 残ったダメージを敵のHPから差し引く
         enemy.hp -= finalDamage;
         if (enemy.hp < 0) enemy.hp = 0;
+        enemy.hp = truncateToOneDecimal(enemy.hp); // 浮動小数点の誤差を防ぎ、小数第一位に揃える
 
         // ✨ 追加ポイント2: 実際に敵のHPが減ったタイミングでダメージ音頭数値を表示！
         if (typeof createDamagePopup === 'function') {
@@ -302,6 +383,28 @@ function damageEnemy(amount, ignoreBlock = false, isPierce = false) {
         // 🦁 獣（Beast）の特性用（ダメージを受けたらフラグを立てる）
         if (enemy.data && enemy.data.name === "Beast") {
             window.beastDamagedThisTurn = true;
+        }
+
+        // 🌕 Luna：体力が半分以下になった瞬間（1回だけ）に発動する変化
+        if (enemy.data && enemy.data.name === "Luna" && enemy.hp > 0 && !enemy.status.lunaPhase2) {
+            if (enemy.hp <= enemy.maxHp / 2) {
+                enemy.status.lunaPhase2 = true;
+
+                // アイコンを新月に変更（enemy.dataは全Lunaで共有されるテンプレートなので、
+                // ここでは直接DOMを書き換える。enemy.dataそのものは書き換えない）
+                const enemyIconEl = document.getElementById("enemyIcon");
+                if (enemyIconEl) enemyIconEl.innerText = "🌑";
+
+                // 攻撃力を1.33倍に変更
+                enemy.attack = Math.floor(enemy.attack * 1.33);
+
+                // 呪いカードをさらに5枚デッキに追加（倒しても削除されない5枚とは別に、こちらも削除対象外）
+                const slot = window.currentSlot || 0;
+                if (!window.savedDecks[slot]) window.savedDecks[slot] = {};
+                window.savedDecks[slot][0] = (window.savedDecks[slot][0] || 0) + 5;
+
+                customAlert("🌑 敵の姿が変わった！");
+            }
         }
     }
 
@@ -351,6 +454,18 @@ function removeReaperCursesFromSavedDecks() {
         }
 
 
+    }
+
+    // 🌕 Luna：倒した時に呪いカードを5枚だけ削除する（戦闘中に追加された合計10枚のうち5枚は残り続ける）
+    if(enemy.data && enemy.data.name === "Luna"){
+        if (window.savedDecks && window.savedDecks[slot] && window.savedDecks[slot][0] !== undefined) {
+            window.savedDecks[slot][0] -= 5;
+
+            if (window.savedDecks[slot][0] <= 0) {
+                delete window.savedDecks[slot][0];
+            }
+            console.log("🧹 Lunaを倒したため、呪いカードを5枚削除しました。");
+        }
     }
 
 }

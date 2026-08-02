@@ -20,6 +20,60 @@ bgmAudio.preload = 'auto'; // 早めにバッファリングを始めておく
 let bgmLastIndex = -1;
 let bgmPool = []; // まだ今回のサイクルで流していない曲のインデックス一覧
 
+// ==========================================================
+// 🔊 SE（効果音）再生システム
+// ==========================================================
+// ↓ music/SE フォルダに入れたmp3ファイル名をここに追記してください
+const SE_FILES = {
+    click: "music/SE/クリック.mp3",   // カード使用時
+    potion: "music/SE/ポーション.mp3" // ポーション使用時
+};
+
+// SEごとの個別音量倍率（全体のSE音量スライダーに対して、さらに掛け算する係数）
+// 例: potionを2にすると、同じ音を同時に2回重ねて鳴らし、体感音量を約2倍にする
+const SE_VOLUME_MULTIPLIER = {
+    potion: 2.0
+};
+
+// SE音量もBGMと同様にlocalStorageに保存する（未設定なら70%）
+function getSavedSeVolume() {
+    const saved = localStorage.getItem('se_volume');
+    return saved !== null ? parseFloat(saved) / 100 : 0.7;
+}
+
+function setSeVolume(percent) {
+    const vol = Math.max(0, Math.min(100, percent)) / 100;
+    localStorage.setItem('se_volume', percent);
+    return vol;
+}
+
+// SEを再生する（毎回新しいAudioを生成するので、連打しても音が重なって鳴る）
+// 倍率が指定されているSEは、同じ音を同時に複数回重ねて鳴らすことで体感音量を上げる
+// （Web Audio API/GainNodeは環境によって再生が不安定になることがあったため、
+//   確実に鳴る通常のAudio再生方式に統一した）
+function playSE(name) {
+    const src = SE_FILES[name];
+    if (!src) {
+        console.warn('未定義のSEが指定されました:', name);
+        return;
+    }
+
+    // 🔇 mキーでミュート中はSEも鳴らさない（BGMと連動）
+    if (isSeMuted) return;
+
+    const multiplier = SE_VOLUME_MULTIPLIER[name] || 1.0;
+    const playCount = Math.max(1, Math.round(multiplier)); // 2.0なら2重再生で約2倍の体感音量にする
+    const vol = Math.min(1, Math.max(0, getSavedSeVolume()));
+
+    for (let i = 0; i < playCount; i++) {
+        const se = new Audio(src);
+        se.volume = vol;
+        se.play().catch((err) => {
+            console.warn('SE再生に失敗しました:', src, err);
+        });
+    }
+}
+
 // 音量はlocalStorageに保存（設定画面のスライダーと連動）
 function getSavedBgmVolume() {
     const saved = localStorage.getItem('bgm_volume');
@@ -133,6 +187,13 @@ function initBgm() {
     if (rangeEl) rangeEl.value = savedPercent;
     if (valEl) valEl.innerText = savedPercent;
 
+    // 🔊 SE音量スライダーの表示も、保存済みの音量に合わせる
+    const savedSePercent = Math.round(getSavedSeVolume() * 100);
+    const seRangeEl = document.getElementById('seVolumeRange');
+    const seValEl = document.getElementById('seVolumeVal');
+    if (seRangeEl) seRangeEl.value = savedSePercent;
+    if (seValEl) seValEl.innerText = savedSePercent;
+
     // ページを開いた瞬間に1曲選んで先読み（バッファリング）だけ始めておく
     loadNextTrack();
 
@@ -164,16 +225,19 @@ window.addEventListener('DOMContentLoaded', () => {
 // ⌨️ キーボード操作（m: ミュート切替 / n: 次の曲へスキップ）
 // ==========================================================
 let bgmMutedVolume = null; // ミュート前の音量を保持（nullならミュートしていない）
+let isSeMuted = false; // SE側のミュート状態（BGMと連動して切り替える）
 
 function toggleBgmMute() {
     if (bgmMutedVolume === null) {
         // ミュートにする（現在の音量を退避してから0に）
         bgmMutedVolume = bgmAudio.volume;
         bgmAudio.volume = 0;
+        isSeMuted = true;
     } else {
         // 退避しておいた元の音量に戻す
         bgmAudio.volume = bgmMutedVolume;
         bgmMutedVolume = null;
+        isSeMuted = false;
     }
 
     // 設定モーダルのスライダー表示も同期（保存はしない＝ミュートは一時的な操作のため）

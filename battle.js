@@ -64,6 +64,12 @@ function toggleConfigModal() {
     }
 }
 
+// 💀 敵の表示名を返す（エリートなら "Goblin_Elite" のような接尾辞付きにする）
+function getEnemyDisplayName() {
+    if (!enemy || !enemy.data) return "";
+    return enemy.data.isElite ? `${enemy.data.name}_Elite` : enemy.data.name;
+}
+
 function startBattle(){
     player.maxEnergy = 5 + Math.floor(floor / 2); 
     player.energy = player.maxEnergy;
@@ -174,7 +180,7 @@ if (enemy.data.name === "Trait") {
 
     const enemyNameEl = document.getElementById("enemyName");
     const enemyIconEl = document.getElementById("enemyIcon");
-    if(enemyNameEl) enemyNameEl.innerText = enemy.data.name;
+    if(enemyNameEl) enemyNameEl.innerText = getEnemyDisplayName();
     if(enemyIconEl) enemyIconEl.innerText = enemy.data.icon;
 
     player.block = 0;
@@ -215,17 +221,27 @@ console.log(enemy.status.traits);
         window.savedDecks[slot][0] = (window.savedDecks[slot][0] || 0) + 5;
     }
 
+    // 🌕 Luna: 呪いカードを5枚デッキに追加する（倒した時に5枚だけ削除される）
+    if (enemy.data && enemy.data.name === "Luna") {
+        const slot = window.currentSlot || 0;
+        if (!window.savedDecks[slot]) window.savedDecks[slot] = {};
+        window.savedDecks[slot][0] = (window.savedDecks[slot][0] || 0) + 5;
+    }
+
     if (typeof initBattleDeck === 'function') {
         initBattleDeck();
     }
     
     if(typeof drawHand === 'function') drawHand();
 
-    // 🌑 Void: 1ターン目から過労を付与し、手札からランダムに2枚捨て札へ送る
-    if (typeof applyVoidTurnEffect === 'function') applyVoidTurnEffect();
+    // 🦇 Bat: 1ターン目から過労を付与し、手札からランダムに2枚捨て札へ送る
+    if (typeof applyBatTurnEffect === 'function') applyBatTurnEffect();
 
     // 👁️‍🗨️ Sight: 1ターン目から過労を付与する
     if (typeof applySightTurnEffect === 'function') applySightTurnEffect();
+
+    // 🌕 Luna: 1ターン目から自己回復（または忘却判定）を行う
+    if (typeof applyLunaTurnEffect === 'function') applyLunaTurnEffect();
 
     if(typeof renderHand === 'function') renderHand();
     if(typeof updateUI === 'function') updateUI();
@@ -339,6 +355,9 @@ function playCard(index){
     // 💡【修正】減算するエネルギーも実際のコスト(actualCost)に変更
     player.energy -= actualCost;
 
+    // 🔊 カード使用SE
+    if (typeof playSE === 'function') playSE('click');
+
     // 🃏 このターンに使用したカード枚数（id:1515「1ターン目の初手なら3枚ドロー」等で使用）
     window.cardsPlayedThisTurn = (window.cardsPlayedThisTurn || 0) + 1;
     
@@ -354,7 +373,7 @@ function playCard(index){
 
         // 効果発動
         executeCardEffect(card, index);
-
+    
 
     // 📉 過労：状態が有効な間、カードを1枚使うたびに2ダメージを受ける
     if (player.status.fatigue > 0 && inBattle) {
@@ -395,7 +414,14 @@ function playCard(index){
             // 何もしない（手札に残す）
         } else {
             discardPile.push(card);
-            hand.splice(index, 1);
+            // 💡 index はexecuteCardEffect呼び出し前の位置。効果内で手札配列が
+            // 変化する場合（Tempestの手札シャッフル等）があるため、参照で位置を再検索する
+            const selfIndex = hand.indexOf(card);
+            if (selfIndex !== -1) {
+                hand.splice(selfIndex, 1);
+            } else if (hand[index] === card) {
+                hand.splice(index, 1);
+            }
         }
 
     }
@@ -549,7 +575,7 @@ if(enemy.data.name==="Trait"){
     hand = [];
 
     // 毒の処理
-    if (!enemy.data.immuneStatus && enemy.status.poisonList && enemy.status.poisonList.length > 0) {
+    if (!(typeof isEnemyImmuneToStatusEffects === 'function' && isEnemyImmuneToStatusEffects()) && enemy.status.poisonList && enemy.status.poisonList.length > 0) {
         let newPoisonTotal = 0;
         let oldPoisons = enemy.status.poisonList.filter(p => !p.isNew);
         let newPoisons = enemy.status.poisonList.filter(p => p.isNew);
@@ -595,10 +621,7 @@ if(enemy.data.name==="Trait"){
     // プレイヤーのその他状態異常の残りターン減少
     if (player.status.immaturity > 0) player.status.immaturity--;
     if (player.status.fatigue > 0) player.status.fatigue--;
-    if (player.status.meditation > 0) {
-        player.status.meditation--;
-        if (player.status.meditation === 0) customAlert("🧘 瞑想の効果が切れた。");
-    }
+    if (player.status.meditation > 0) player.status.meditation--;
 
     if(player.status.healTurns > 0){
         player.status.healTurns--;
@@ -641,9 +664,9 @@ if(enemy.data.name==="Trait"){
         if(typeof updateUI === 'function') updateUI();
     }
 
-    // ▼ 盗賊の逃走判定（最初のターン以外で4%の確率）
+    // ▼ 盗賊の逃走判定（最初のターン以外で8%の確率）
     if (enemy.data && enemy.data.name === "Thief") {
-        if (!window.isFirstTurn && Math.random() < 0.04) {
+        if (!window.isFirstTurn && Math.random() < 0.08) {
             customAlert("🏴‍☠️ 盗賊は素早く逃げ出した！戦闘が強制終了します。");
             inBattle = false;
             if(endTurnBtn) endTurnBtn.disabled = false;
@@ -843,6 +866,7 @@ if (enemy.data && enemy.data.name === "Greedy") {
                 enemy.status.predictTurns--;
             }
 
+
             // 防御値（ブロック）計算
             let baseBlock = Math.floor(Math.random() * 5) + 3;
             let gainBlock = Math.floor(baseBlock * styleInfo.blkRate * (enemy.data ? enemy.data.blockRate : 1.0));
@@ -861,7 +885,6 @@ if (enemy.data && enemy.data.name === "Greedy") {
                 enemy.status.freeze--;
             }
             damage = Math.floor(damage * styleInfo.atkRate);
-
 
             if(enemy.data && enemy.data.name === "Beast"){
                 if(!window.beastDamagedThisTurn){ damage *= 2; logText += `<div style="color:#ff4141;">🦁 獣が怒り狂って攻撃力2倍！</div>`; }
@@ -916,6 +939,7 @@ if (enemy.data && enemy.data.name === "Greedy") {
                     if (reflectDamage > 0) {
                         enemy.hp -= reflectDamage * 1.5;
                         if (enemy.hp < 0) enemy.hp = 0;
+                        if (typeof truncateToOneDecimal === 'function') enemy.hp = truncateToOneDecimal(enemy.hp);
                         customAlert(`👊 カウンター発動！ 敵に ${reflectDamage} の反射ダメージ！`);
                         if (typeof createDamagePopup === 'function') createDamagePopup(reflectDamage, true);
                 
@@ -995,7 +1019,6 @@ if (enemy.data && enemy.data.name === "Greedy") {
     // ⚡ id:1514「次ターンにエネルギー+2」の予約分を消費
     if (player.status.nextTurnEnergyBonus > 0) {
         player.energy += player.status.nextTurnEnergyBonus;
-        customAlert(`⚡ 予約されていたエネルギー+${player.status.nextTurnEnergyBonus}が発動！`);
         player.status.nextTurnEnergyBonus = 0;
     }
 
@@ -1025,11 +1048,14 @@ if (enemy.data && enemy.data.name === "Greedy") {
         if(typeof drawOneCard === 'function') drawOneCard(); 
     }
 
-    // 🌑 Void: 毎ターン過労を付与し、手札からランダムに2枚捨て札へ送る
-    if (typeof applyVoidTurnEffect === 'function') applyVoidTurnEffect();
+    // 🦇 Bat: 毎ターン過労を付与し、手札からランダムに2枚捨て札へ送る
+    if (typeof applyBatTurnEffect === 'function') applyBatTurnEffect();
 
     // 👁️‍🗨️ Sight: 毎ターン過労を付与する
     if (typeof applySightTurnEffect === 'function') applySightTurnEffect();
+
+    // 🌕 Luna: 毎ターン自己回復（または忘却判定）を行う
+    if (typeof applyLunaTurnEffect === 'function') applyLunaTurnEffect();
 
     if(typeof renderHand === 'function') renderHand();
     if(typeof updateUI === 'function') updateUI();
@@ -1041,8 +1067,8 @@ function victory(){
     inBattle = false;
     window.witchBannedCategory = null;
 
-    // スコア計算用：撃破した敵の数をカウント
-    window.enemiesDefeatedCount = (window.enemiesDefeatedCount || 0) + 1;
+    // スコア計算用：撃破した敵の数をカウント（エリートは+1.5、通常は+1）
+    window.enemiesDefeatedCount = (window.enemiesDefeatedCount || 0) + (enemy.data && enemy.data.isElite ? 1.5 : 1);
 
 
     if (player.status) {
@@ -1064,6 +1090,11 @@ function victory(){
 
     //アンドール戦だった場合、勝利時に savedDecks から呪いを15枚削除する
     if (enemy.data && enemy.data.name === "Undoll") {
+        removeReaperCursesFromSavedDecks();
+    }
+
+    // 🌕 Luna戦だった場合、勝利時に savedDecks から呪いを5枚だけ削除する（残り5枚は永続的に残る）
+    if (enemy.data && enemy.data.name === "Luna") {
         removeReaperCursesFromSavedDecks();
     }
 
@@ -1278,6 +1309,9 @@ function usePotion(slotIndex) {
     const type = window.playerPotions[slotIndex];
     window.playerPotions.splice(slotIndex, 1);
 
+    // 🔊 ポーション使用SE
+    if (typeof playSE === 'function') playSE('potion');
+
     if (type === "heal") {
         player.hp = Math.min(player.maxHp, player.hp + 15);
         customAlert("❤️‍🩹 回復ポーションを使用！プレイヤーのHPが 15 回復した。");
@@ -1366,7 +1400,7 @@ window.addEventListener("keydown", function(event) {
 function gameSave(){
 
 
-    document.getElementById("gameSaveEnemy").innerText = enemy.data.name;
+    document.getElementById("gameSaveEnemy").innerText = getEnemyDisplayName();
     document.getElementById("gameSaveFloor").innerText = floor;
     document.getElementById("gameSaveGold").innerText = player.gold;
 
@@ -1384,6 +1418,7 @@ function continueFromGameSave(){
     if (typeof openMap === 'function') openMap();
 }
 
+//スコア計算
 function calculateScore() {
     const deckCount = deck.length;
     const hpPercent = player.maxHp > 0 ? Math.floor((player.hp / player.maxHp) * 100) : 0;
@@ -1392,10 +1427,10 @@ function calculateScore() {
 
     let score = (deckCount * 10) + (hpPercent * 2.5) + (gold * 0.25) + (enemiesDefeated * 10);
 
-    if (floor >= 2) score += 50;
+    if (floor >= 2)  score += 250;
     if (floor >= 20) score += 100;
     if (floor >= 40) score += 200;
-    score = score - 405;
+    score = score - 605;
 
     return Math.max(0, Math.floor(score));
 }
@@ -1415,7 +1450,7 @@ function gameover() {
 
     // モーダルへ情報を表示
 
-    document.getElementById("gameOverEnemy").innerText = enemy.data.name;
+    document.getElementById("gameOverEnemy").innerText = getEnemyDisplayName();
     document.getElementById("gameOverFloor").innerText = floor;
     document.getElementById("gameOverGold").innerText = player.gold;
     document.getElementById("gameOverScore").innerText = calculateScore();
@@ -1426,7 +1461,7 @@ function gameover() {
 
 function gameclear(){
 
-    document.getElementById("gameClearEnemy").innerText = enemy.data.name;
+    document.getElementById("gameClearEnemy").innerText = getEnemyDisplayName();
     document.getElementById("gameClearFloor").innerText = floor;
     document.getElementById("gameClearGold").innerText = player.gold;
     document.getElementById("gameClearScore").innerText = calculateScore();
@@ -1447,3 +1482,229 @@ function returnToTitle() {
     // 必要ならここで初期化
     location.reload();
 }
+// =========================================================================
+// 🤖 オートバトル（簡易AIプレイ / 周回用）
+// =========================================================================
+// A + I キーの同時押しでオートバトルを開始し、開始後は何かキーを押すと停止する
+window.autoBattleActive = window.autoBattleActive || false;
+window.autoBattleTimer = window.autoBattleTimer || null;
+window._autoBattleKeysDown = window._autoBattleKeysDown || {};
+
+// 敵に状態異常を「付与」するタイプ一覧（immuneStatusの敵には使わない対象）
+// ※buffHeal/adrenaline/counterSetup/leakblk/buffMeditation/timeLoopなど自分向けの効果は含めない
+const AUTO_BATTLE_ENEMY_DEBUFF_TYPES = [
+    "poisonOnly", "poisonAttack", "burnAttack", "poisonBurn",
+    "freezeAttack", "stunAttack", "poisonpoison",
+    "grantAbsoluteZero", "freezeThenAbsoluteZero"
+];
+// 毒・火傷など「status」フィールドが継続ダメージ量の目安になるタイプ（合計ダメージ見積り用）
+const AUTO_BATTLE_DAMAGE_STATUS_TYPES = ["poisonOnly", "poisonAttack", "poisonBurn", "burnAttack"];
+// 凍結を狙うカード（凍結単体 or 超絶対零度）
+const AUTO_BATTLE_FREEZE_TYPES = ["freezeAttack", "freezeThenAbsoluteZero"];
+// 毒を付与するタイプ／火傷を付与するタイプ（個別耐性チェック用）
+const AUTO_BATTLE_POISON_TYPES = ["poisonOnly", "poisonAttack", "poisonBurn", "poisonpoison"];
+const AUTO_BATTLE_BURN_TYPES = ["burnAttack", "poisonBurn"];
+// 回復系タイプ（catがrecでないbuffHealも含める）
+const AUTO_BATTLE_HEAL_TYPES = ["heal", "healBlock", "hpminheal", "buffHeal"];
+
+// そのカードをオートバトルで使って良いか（呪い・耐性・凍結前提・HP/ブロック状況などのルールチェック）
+function isAutoBattleCardAllowed(card) {
+    if (!card) return false;
+
+    // 🚫 呪いカードは使わない
+    if (card.type === "curse" || card.cat === "Curse") return false;
+
+    const data = (enemy && enemy.data) || {};
+    const hpRatio = player.maxHp > 0 ? player.hp / player.maxHp : 1;
+
+    // 🚫 HPが95%以上の時は回復系カードを使わない
+    if (hpRatio >= 0.95 && (card.cat === "rec" || AUTO_BATTLE_HEAL_TYPES.includes(card.type))) return false;
+
+    // 🚫 自分のブロックが既に敵の攻撃力を上回っているなら、防御系カードを使わない
+    if (card.cat === "blk" && player.block >= (enemy.attack || 0)) return false;
+
+    // 🚫 物理攻撃無効の敵には atk カテゴリを使わない（Traitのランダム特性も含めて判定）
+    const isImmuneNormal = typeof isEnemyImmuneToNormal === 'function' ? isEnemyImmuneToNormal() : !!data.immuneNormal;
+    if (isImmuneNormal && card.cat === "atk") return false;
+
+    // 🐺 Fenrir戦は、コストが偶数のカードを使えない（本編のplayCard()側の制限と合わせる）
+    if (data.name === "Fenrir" && card.cost % 2 === 0) return false;
+
+    // 🚫 状態異常無効の敵には、敵を対象にした状態異常付与カードを使わない（自己回復等は対象外。Traitのランダム特性も含めて判定）
+    const isImmuneStatus = typeof isEnemyImmuneToStatusEffects === 'function' ? isEnemyImmuneToStatusEffects() : !!data.immuneStatus;
+    if (isImmuneStatus && AUTO_BATTLE_ENEMY_DEBUFF_TYPES.includes(card.type)) return false;
+
+    // 🚫 毒無効の敵には毒付与カードを使わない
+    if (data.neverPoison && AUTO_BATTLE_POISON_TYPES.includes(card.type)) return false;
+
+    // 🚫 火傷無効の敵には火傷付与カードを使わない
+    if (data.neverBurn && AUTO_BATTLE_BURN_TYPES.includes(card.type)) return false;
+
+    // 🚫 凍結・絶対零度無効の敵には、凍結／絶対零度系カードを使わない（既存のisFreezeAndAbsoluteZeroImmune()を利用）
+    const freezeImmune = typeof isFreezeAndAbsoluteZeroImmune === 'function' && isFreezeAndAbsoluteZeroImmune();
+    if (freezeImmune && (AUTO_BATTLE_FREEZE_TYPES.includes(card.type) || card.type === "grantAbsoluteZero")) return false;
+
+    // 🚫 絶対零度付与カードは、敵が凍結状態の時だけ使う
+    if (card.type === "grantAbsoluteZero" && !(enemy.status && enemy.status.freeze > 0)) return false;
+
+    return true;
+}
+
+// 手札全体のおおよその合計ダメージ見積り（毒・火傷の継続ダメージ、追加ダメージ含む）
+function estimateAutoBattleHandDamage() {
+    let total = 0;
+    for (const card of hand) {
+        if (!card || card.type === "curse" || card.cat === "Curse") continue;
+        total += Number(card.value) || 0;
+        total += Number(card.blkValue) || 0; // ブロック残存時の追加ダメージ系カード
+        if (AUTO_BATTLE_DAMAGE_STATUS_TYPES.includes(card.type)) {
+            total += Number(card.status) || 0; // 毒・火傷の継続ダメージ量の目安
+        }
+    }
+    return total;
+}
+
+// 現在敵にすでに乗っている毒スタックの残り合計ダメージをシミュレーションして見積る
+function estimateStockedPoisonDamage() {
+    if (!enemy.status || !enemy.status.poisonList || enemy.status.poisonList.length === 0) return 0;
+
+    let newTotal = 0;
+    const stacks = [];
+    enemy.status.poisonList.forEach(p => {
+        if (p.isNew) newTotal += p.value;
+        else stacks.push({ value: p.value, duration: p.duration });
+    });
+    if (newTotal > 0) stacks.push({ value: newTotal, duration: 3 }); // 新規分は次ターンからduration3で合算される
+
+    let total = 0;
+    for (let t = 0; t < 50; t++) {
+        const active = stacks.filter(p => p.value > 0 && p.duration > 0);
+        if (active.length === 0) break;
+        total += active.reduce((sum, p) => sum + p.value, 0);
+        active.forEach(p => { p.value--; p.duration--; });
+    }
+    return total;
+}
+
+// 現在乗っている火傷の残り合計ダメージを見積る
+function estimateStockedBurnDamage() {
+    if (!enemy.status || !(enemy.status.burn > 0)) return 0;
+    if (window.currentArea === "rain") return 0; // 雨フィールドでは次ターンで消える
+    let burnDamage = (player.fields && player.fields.heavy_burn > 0) ? 10 : 5;
+    if (window.currentArea === "sunny") burnDamage *= 2;
+    return burnDamage * enemy.status.burn;
+}
+
+// 手札から使うカードを決める簡易AI
+// 優先順位：①呪い/耐性/HP・ブロック状況/凍結前提の除外 → ②凍結・絶対零度が無ければ凍結/超絶対零度優先
+//         → ③手札の合計ダメージが敵HP超えなら攻撃優先 → ④HP/ブロック状況に応じた通常優先度
+function pickAutoBattleCardIndex() {
+    const energy = player.energy;
+    const hpRatio = player.maxHp > 0 ? player.hp / player.maxHp : 1;
+    const enemyHp = (enemy && enemy.hp) || 0;
+    const isFrozenOrAbsoluteZero = !!(enemy.status && (enemy.status.freeze > 0 || enemy.status.absoluteZeroTurns > 0));
+
+    // コストを満たし、かつルール上使用可能なカードのインデックス一覧
+    const playableIndices = [];
+    for (let i = 0; i < hand.length; i++) {
+        const c = hand[i];
+        if (c && c.cost <= energy && isAutoBattleCardAllowed(c)) playableIndices.push(i);
+    }
+    if (playableIndices.length === 0) return -1;
+
+    const findIn = (predicate) => {
+        const found = playableIndices.find(i => predicate(hand[i]));
+        return found === undefined ? -1 : found;
+    };
+
+    // ① 敵が凍結・絶対零度状態でないなら、凍結 or 超絶対零度カードを最優先で使う
+    if (!isFrozenOrAbsoluteZero) {
+        const freezeIdx = findIn(c => AUTO_BATTLE_FREEZE_TYPES.includes(c.type));
+        if (freezeIdx !== -1) return freezeIdx;
+    }
+
+    // ② 手札の合計ダメージが敵の残りHPを上回るなら、攻撃カテゴリを最優先にする
+    let categoryOrder;
+    if (estimateAutoBattleHandDamage() > enemyHp) {
+        categoryOrder = ['atk', 'abn', 'blk', 'rec'];
+    } else if (hpRatio < 0.35) {
+        categoryOrder = ['rec', 'blk', 'atk', 'abn'];
+    } else if (player.block < (enemy.attack || 0)) {
+        categoryOrder = ['blk', 'atk', 'rec', 'abn'];
+    } else {
+        categoryOrder = ['atk', 'abn', 'blk', 'rec'];
+    }
+
+    for (const cat of categoryOrder) {
+        const idx = findIn(c => c.cat === cat);
+        if (idx !== -1) return idx;
+    }
+    // カテゴリで見つからなければ、使用可能な任意のカードを使う
+    return playableIndices[0];
+}
+
+// 1ティック分のオートバトル処理（カードを1枚使うか、使えるカードが無ければターン終了）
+function runAutoBattleStep() {
+    if (!window.autoBattleActive) return;
+    if (!window.inBattle) return; // 戦闘外（マップ・報酬選択など）は今回は自動化対象外
+
+    if (window.discardSelectMode && window.discardSelectMode.active) return; // 特殊選択中は手を出さない
+
+    // 🩸 現在ストックされている毒・火傷の残りダメージだけで敵を倒せるなら、カードを温存してターン終了する
+    const stockedDotDamage = estimateStockedPoisonDamage() + estimateStockedBurnDamage();
+    if (enemy && stockedDotDamage >= (enemy.hp || 0) && (enemy.hp || 0) > 0) {
+        endTurn();
+        return;
+    }
+
+    const playIndex = pickAutoBattleCardIndex();
+    if (playIndex !== -1) {
+        playCard(playIndex);
+    } else {
+        endTurn();
+    }
+}
+
+function startAutoBattle() {
+    if (window.autoBattleActive) return;
+    window.autoBattleActive = true;
+    if (window.autoBattleTimer) clearInterval(window.autoBattleTimer);
+    window.autoBattleTimer = setInterval(runAutoBattleStep, 800);
+    customAlert("🤖 オートバトルを開始しました。");
+}
+
+function stopAutoBattle() {
+    if (!window.autoBattleActive) return;
+    window.autoBattleActive = false;
+    if (window.autoBattleTimer) {
+        clearInterval(window.autoBattleTimer);
+        window.autoBattleTimer = null;
+    }
+    customAlert("🛑 オートバトルを停止しました。");
+}
+
+document.addEventListener('keydown', (e) => {
+    const tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+    const key = e.key.toLowerCase();
+
+    // オートバトル中に何かキーを押したら停止する
+    if (window.autoBattleActive) {
+        stopAutoBattle();
+        window._autoBattleKeysDown = {};
+        return;
+    }
+
+    // A + I の同時押しでオートバトル開始
+    window._autoBattleKeysDown[key] = true;
+    if (window._autoBattleKeysDown['a'] && window._autoBattleKeysDown['i']) {
+        startAutoBattle();
+        window._autoBattleKeysDown = {};
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    const key = e.key.toLowerCase();
+    delete window._autoBattleKeysDown[key];
+});

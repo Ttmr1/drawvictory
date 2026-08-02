@@ -189,7 +189,7 @@ function saveAndTestAlert() {
     localStorage.setItem("alert_display_time", time);
     
     // テスト表示
-    const testMsg = time == 0 ? "アラートは表示されません" : `表示時間: ${time} 秒`;
+    const testMsg = time == 0 ? "アラートは表示されません" : `表示時間は ${time} 秒です`;
     customAlert(testMsg, time);
 }
 
@@ -326,6 +326,17 @@ function switchMenuTab(tabName) {
 
             <div class="rule-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
                 <div class="enemy-header" onclick="const detail = this.nextElementSibling; const isOpen = detail.style.display === 'block'; detail.style.display = isOpen ? 'none' : 'block'; this.classList.toggle('active'); if(!isOpen) { setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50); }" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>⏱️ ショートカットキー一覧</span>
+                </div>
+                <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    戦闘のとき<strong>spaceキー</strong>を押すことでターンを終了することができる。<br>
+		    <strong>nキー</strong>を押すことで現在流れているBGMの曲を次の曲に飛ばすことができる。<br>
+		    <strong>mキー</strong>を押すことであらゆる音量を0にします。もう一度押すと、元の音量に戻ります。
+                </div>
+            </div>
+
+            <div class="rule-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="const detail = this.nextElementSibling; const isOpen = detail.style.display === 'block'; detail.style.display = isOpen ? 'none' : 'block'; this.classList.toggle('active'); if(!isOpen) { setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50); }" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; background: rgba(255,255,255,0.05); border-radius: 4px;">
                     <span>⚡ 連鎖するコンボシステム</span>
                 </div>
                 <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
@@ -354,9 +365,9 @@ function switchMenuTab(tabName) {
                     <span>🎴カードのレアリティ</span>
                 </div>
                 <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    レアリテはcommon、uncommon、<span style="color: lightblue;">rare</span>、<span style="color: yellow;">legend</span>、<span style="color: purple;">space</span>があります。</p>
+                    レアリテはcommon、uncommon、<span style="color: lightblue;">rare</span>、<span style="color: yellow;">legend</span>、<span style="color: pink;">space</span>があります。</p>
 		<p>カードを強化することでレアリティを1段階挙げることが出来ます。</p>
-		<p>commonまたはuncommonは<span style="color: lightblue;">rare</span>に、<span style="color: lightblue;">rare</span>は<span style="color: yellow;">legend</span>に、<span style="color: yellow;">legend</span>は<span style="color: purple;">space</span>に強化できますが、すべてのカードが<span style="color: purple;">space</span>まで強化できるとは限りません。</p>
+		<p>commonまたはuncommonは<span style="color: lightblue;">rare</span>に、<span style="color: lightblue;">rare</span>は<span style="color: yellow;">legend</span>に、<span style="color: yellow;">legend</span>は<span style="color: pink;">space</span>に強化できますが、すべてのカードが<span style="color: pink;">space</span>まで強化できるとは限りません。</p>
 		</div>
             </div>
 
@@ -470,7 +481,7 @@ function switchMenuTab(tabName) {
                     </div>
                 </div>
                 <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    プレイヤーのブロックを貫通して本体HPにダメージを与えるたびに、懐から「50G」を容赦なくスり盗る。さらに、毎ターン終了時に4%の確率で戦闘から逃亡してしまう。逃げられると盗まれた金は返らない。逃げる前に瞬間火力で仕留めろ！
+                    プレイヤーのブロックを貫通して本体HPにダメージを与えるたびに、懐から「50G」を容赦なくスり盗る。さらに、毎ターン終了時に8%の確率で戦闘から逃亡してしまう。逃げられると盗まれた金は返らない。逃げる前に瞬間火力で仕留めろ！
                 </div>
             </div>
 
@@ -688,7 +699,7 @@ function switchMenuTab(tabName) {
 
             <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
                 <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Void 🌑</span>
+                    <span>Bat 🦇</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <strong style="color: #00adb5;">【毎ターン過労付与＋手札破壊】</strong>
                         <span style="color: gold;">200G</span>
@@ -708,11 +719,38 @@ function switchMenuTab(tabName) {
                     </div>
                 </div>
                 <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    出現時にデッキへ「呪い」カードを5枚追加する。この呪いカードはSightを倒した後もデッキに残り続ける。毎ターン、プレイヤーに「過労」状態を付与する。凍結状態・絶対零度状態を無効化する。物理攻撃によるダメージを半分に軽減する。
+                    出現時にデッキへ「呪い」カードを5枚追加する。この呪いカードはSightを倒した後もデッキに残り続ける。毎ターン、プレイヤーに「過労」状態を付与する。凍結状態・絶対零度状態のどちらも無効化する。物理攻撃によるダメージを半分に軽減する。
                 </div>
             </div>
 
+            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>Luna 🌕</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <strong style="color: #00adb5;">【フェーズ変化・呪い付与】</strong>
+                        <span style="color: gold;">200G</span>
+                    </div>
+                </div>
+                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    出現時にデッキへ「呪い」カードを5枚追加する。スタン状態にならない。物理攻撃によるダメージを半分に軽減する。<br>
+                    体力が半分より多いときは、毎ターン自身の最大HPの5%回復する。<br>
+                    体力が半分以下になると攻撃力が1.33倍になる。さらに呪いカードを5枚追加し、毎ターン1/3の確率でプレイヤーに「忘却」を付与する。<br>
+                    倒すと、追加した呪いカードのうち5枚だけが削除される。
+                </div>
+            </div>
 
+            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>Tempest 🌪️</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <strong style="color: #00adb5;">【カード使用時に手札をデッキへ巻き戻す】</strong>
+                        <span style="color: gold;">200G</span>
+                    </div>
+                </div>
+                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    プレイヤーがカードを1枚使用するたびに、その使用したカード以外の残りの手札を全てデッキへ戻してシャッフルする。手札を溜めたコンボや連続使用の組み立てが崩されやすい。
+                </div>
+            </div>
 
 
 
@@ -850,11 +888,16 @@ function switchMenuTab(tabName) {
                `<h3>マップはランダムに3から4つの分岐が生成され、プレイヤーは進路を自分で選択して進む。</h3>` +
                `<hr style='border:1px solid rgba(255,255,255,0.1); margin:10px 0;'>` +
                `<p><strong>⚔️ 戦闘 (Battle)</strong>:<br>` +
-               `通常の敵、または階層に応じた強敵と戦います。勝利するとゴールドを獲得し、新しいカードをデッキに加えることができます。<strong>20階</strong>と<strong>40階</strong>ではボスと戦闘になります。</p>` +
+               `通常の敵、または階層に応じた強敵と戦います。勝利するとゴールドを獲得し、新しいカードをデッキに加えることができます。</p>` +
+
+               `<p><strong>💀 エリート (Elite)</strong>:<br>` +
+               `体力や攻撃力が通常より高い敵が出てくる。報酬のゴールドは約1.5倍である。なお、出てくる敵の種類は⚔️ 戦闘 (Battle)と同じである。</p>` +
+
                `<p><strong>🛒 ショップ (Shop)</strong>:<br>` +
                `所持金（ゴールド）を消費して、ランダムに並んだカード、フィールド効果、ポーションを購入できます。最大2つまで購入可能です。低確率でセールがあり、100G 引きで購入可能。</p>` +
                `<p><strong>🌌 闇市 (Dark Market)</strong>:<br>` +
                `危険なショップです。【最大HPが10減少】しますが、購入制限なしかつ少し割引で10枚の強力なカード、フィールド効果、ポーションを買えます。</p>` +
+
                `<p><strong>⛺ 休憩所 (Rest)</strong>:<br>` +
                `安全に体力を10%回復します。また、以下の選択肢から1つ選びます。<br>`+
 	       `・カードの削除　　:デッキからカードの削除ができます。1枚削除するのに25Gかかります。</p>`+
@@ -874,8 +917,20 @@ function switchMenuTab(tabName) {
                <a href="https://youtu.be/GN9uXvp4fKg?si=eZ0Nwi8ZRS_pLwjB" target="_blank" rel="noopener noreferrer" style="color: white;">メランコリックシンドローム / EigHt</a><br>
                <a href="https://youtu.be/sa7XKGc0H_I?si=16iQVOD2g9tzmF7Z" target="_blank" rel="noopener noreferrer" style="color: white;">絶望から見いだした希望 / non works</a><br>
                <a href="https://youtu.be/VprPkuTwCGM?si=wU5zqzt9PsoiOucu" target="_blank" rel="noopener noreferrer" style="color: white;">嘆きのダークローズ / EigHt</a><br>
-               <a href="https://youtu.be/OvyjabhA38s?si=MDJqvWAqfWALbiDu" target="_blank" rel="noopener noreferrer" style="color: white;">不思議の国のアリス症候群 / EigHt</a><br>`;
+               <a href="https://youtu.be/OvyjabhA38s?si=MDJqvWAqfWALbiDu" target="_blank" rel="noopener noreferrer" style="color: white;">不思議の国のアリス症候群 / EigHt</a>
+<br>
+<br>
+<h2>♫ 使用したサウンドエフェクト</h2>
+<a href="https://soundeffect-lab.info/" target="_blank" rel="noopener noreferrer" style="color: white;">効果音ラボ</a><br>
+
+
+`;
+
+
+
     }
+
+
 
     contentDiv.innerHTML = html;
 }

@@ -143,6 +143,11 @@ const allCardsMaster = [
 { id: 2123, name: "貫通", cost: 2, desc: "敵の防御値を無視して11ダメージ", type: "pierceAttack", value: 11, rarity: "rare", cat: "atk", isInitial: false },
 { id: 3123, name: "貫通", cost: 2, desc: "敵の防御値を無視して16ダメージ", type: "pierceAttack", value: 16, rarity: "legend", cat: "atk", isInitial: false },
 
+// type: "blockBonusAttack" -> id順（〇ダメージ、その後敵にブロックが残っているなら追加ダメージ）
+{ id: 1124, name: "7ダメ+追加8", cost: 2, desc: "7ダメージ、その後ブロックが残っているなら+8ダメージ", type: "blockBonusAttack", value: 7, blkValue: 8, rarity: "uncommon", cat: "atk", isInitial: false },
+{ id: 2124, name: "8ダメ+追加12", cost: 2, desc: "8ダメージ、その後ブロックが残っているなら+12ダメージ", type: "blockBonusAttack", value: 8, blkValue: 12, rarity: "rare", cat: "atk", isInitial: false },
+{ id: 3124, name: "8ダメ+追加20", cost: 3, desc: "8ダメージ、その後ブロックが残っているなら+20ダメージ", type: "blockBonusAttack", value: 8, blkValue: 20, rarity: "legend", cat: "atk", isInitial: false },
+
 // ==========================================
 // 🛡️ cat: "blk" (防御系)
 // ==========================================
@@ -169,6 +174,11 @@ const allCardsMaster = [
 
 // type: "curseWall" -> id順
 { id: 1204, name: "呪いの枚数×8ブロック", cost: 1, desc: "手札にある呪いカードの枚数×8のブロック。", type: "curseWall", value: 8, rarity: "uncommon", cat: "blk", isInitial: false },
+
+// type: "block"（cureFatigueLeak付き）-> id順（〇ブロック+過労・漏電を解除）
+{ id: 1205, name: "8ブロック+浄化", cost: 3, desc: "8ブロック+過労と漏電の状態異常をなくす", type: "block", value: 8, rarity: "uncommon", cat: "blk", isInitial: false, cureFatigueLeak: true },
+{ id: 2205, name: "10ブロック+浄化", cost: 2, desc: "10ブロック+過労と漏電の状態異常をなくす", type: "block", value: 10, rarity: "rare", cat: "blk", isInitial: false, cureFatigueLeak: true },
+{ id: 3205, name: "12ブロック+浄化", cost: 2, desc: "12ブロック+過労と漏電の状態異常をなくす", type: "block", value: 12, rarity: "legend", cat: "blk", isInitial: false, cureFatigueLeak: true },
 
 // ==========================================
 // 💖 cat: "rec" (回復系)
@@ -261,6 +271,7 @@ const allCardsMaster = [
 { id: 1409, name: "カウンター2T", cost: 1, desc: "受けた敵の物理攻撃を1.5倍のダメージを敵に与える(2ターン)", type: "counterSetup", value: 2, rarity: "uncommon", cat: "abn", isInitial: false },
 { id: 2409, name: "カウンター3T", cost: 1, desc: "受けた敵の物理攻撃を1.5倍のダメージを敵に与える(3ターン)", type: "counterSetup", value: 3, rarity: "rare", cat: "abn", isInitial: false },
 
+
 // type: "leakblk" -> id順
 { id: 1410, name: "耐電1T", cost: 1, desc: "漏電のダメージを半分(1ターン)", type: "leakblk", value: 1, rarity: "uncommon", cat: "abn", isInitial: false },
 { id: 2410, name: "耐電2T", cost: 1, desc: "漏電のダメージを半分(2ターン)", type: "leakblk", value: 2, rarity: "rare", cat: "abn", isInitial: false },
@@ -278,7 +289,8 @@ const allCardsMaster = [
 
 // type: "grantAbsoluteZero" -> id順
 { id: 1415, name: "絶対零度", cost: 2, desc: "絶対零度状態を付与する(1ターン)", type: "grantAbsoluteZero", turn: 1, rarity: "uncommon", cat: "abn", isInitial: false },
-{ id: 2415, name: "絶対零度", cost: 4, desc: "絶対零度状態を付与する(1T,50%の確率で2Tになる)", type: "grantAbsoluteZero", turn: 1, bonusChance: 0.5, bonusTurn: 2, rarity: "rare", cat: "abn", isInitial: false },
+{ id: 2415, name: "絶対零度", cost: 3, desc: "絶対零度状態を付与する(1T,50%の確率で2Tになる)", type: "grantAbsoluteZero", turn: 1, bonusChance: 0.5, bonusTurn: 2, rarity: "rare", cat: "abn", isInitial: false },
+{ id: 3415, name: "絶対零度", cost: 3, desc: "絶対零度状態を付与する(2ターン)", type: "grantAbsoluteZero", turn: 2, rarity: "legend", cat: "abn", isInitial: false },
 
 // type: "freezeThenAbsoluteZero" -> id順
 { id: 1416, name: "超絶対零度", cost: 5, desc: "敵を凍結状態にして絶対零度状態を付与する(1T)", type: "freezeThenAbsoluteZero", freezeTurn: 1, turn: 1, rarity: "uncommon", cat: "abn", isInitial: false },
@@ -336,13 +348,16 @@ const allCardsMaster = [
 // type: "nextTurnEnergy" -> id順
 { id: 1514, name: "エネルギー予約", cost: 2, desc: "次ターンにエネルギーを+2する", type: "nextTurnEnergy", value: 2,plusValue:0, rarity: "uncommon", cat: "oth", isInitial: false },
 { id: 2514, name: "エネルギー予約", cost: 2, desc: "次ターンにエネルギーを+2する。さらに33%で+1", type: "nextTurnEnergy", value: 2,plusValue:1,plusP:0.33, rarity: "rare", cat: "oth", isInitial: false },
+{ id: 3514, name: "エネルギー予約", cost: 2, desc: "次ターンにエネルギーを+2する。さらに50%で+1", type: "nextTurnEnergy", value: 2,plusValue:1,plusP:0.50, rarity: "legend", cat: "oth", isInitial: false },
 
 // type: "firstCardDraw" -> id順
 { id: 1515, name: "幸先の一手", cost: 1, desc: "1ターン目かつ最初に使用すればカードを3枚引く", type: "firstCardDraw", value: 3, rarity: "uncommon", cat: "oth", isInitial: false },
 { id: 2515, name: "幸先の一手", cost: 0, desc: "1ターン目かつ最初に使用すればカードを3枚引く", type: "firstCardDraw", value: 3, rarity: "rare", cat: "oth", isInitial: false },
+{ id: 3515, name: "幸先の一手", cost: 0, desc: "1ターン目かつ最初に使用すればカードを4枚引く", type: "firstCardDraw", value: 4, rarity: "legend", cat: "oth", isInitial: false },
 
 { id: 1516, name: "禁止解除", cost: 3, desc: "使用禁止カードを全て解除する。1ターン", type: "cancelBan", duration: 1, rarity: "uncommon", cat: "oth", isInitial: false },
 { id: 2516, name: "禁止解除", cost: 5, desc: "使用禁止カードを全て解除する。2ターン", type: "cancelBan", duration: 2, rarity: "rare", cat: "oth", isInitial: false },
+{ id: 3516, name: "禁止解除", cost: 4, desc: "使用禁止カードを全て解除する。2ターン", type: "cancelBan", duration: 2, rarity: "legend", cat: "oth", isInitial: false },
 
 
 // ==========================================

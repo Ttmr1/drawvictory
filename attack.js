@@ -1,8 +1,16 @@
 //敵に毒が付与できるかを判定する関数
 function canApplyPoisonToEnemy() {
     if (!enemy.data) return true;
-    if (enemy.data.immuneStatus) return false;
-    if (enemy.data.name === "Golem") return false;
+    if (typeof isEnemyImmuneToStatusEffects === 'function' && isEnemyImmuneToStatusEffects()) return false;
+    if (enemy.data.neverPoison) return false; // 🗿 Golemなど、毒無効フラグを持つ敵
+    return true;
+}
+
+//敵に火傷が付与できるかを判定する関数
+function canApplyBurnToEnemy() {
+    if (!enemy.data) return true;
+    if (typeof isEnemyImmuneToStatusEffects === 'function' && isEnemyImmuneToStatusEffects()) return false;
+    if (enemy.data.neverBurn) return false; // 今後、火傷無効の敵を追加する場合はこのフラグをtrueにする
     return true;
 }
 
@@ -80,20 +88,28 @@ const adrenalineBonus = player.status.adrenalineAtk || 0;
 //〇ダメージ
     if (card.type === "attack") {
 	card.value=card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
-        damageEnemy(card.value);
+        damageEnemy(card.value, false, false, card.cat);
+    }
+
+//〇ダメージ、その後敵にブロックが残っているなら追加〇ダメージ
+    if (card.type === "blockBonusAttack") {
+	card.value=card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
+        damageEnemy(card.value, false, false, card.cat);
+        if (card.blkValue && enemy.block > 0) {
+            damageEnemy(card.blkValue, false, false, card.cat);
+        }
     }
 
 //貫通：敵の防御値を無視して〇ダメージ
     if (card.type === "pierceAttack") {
 	card.value=card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
-        damageEnemy(card.value, true, true); // ignoreBlock=true で防御を無視、isPierce=true で免疫判定用に明示
+        damageEnemy(card.value, true, true, card.cat); // ignoreBlock=true で防御を無視、isPierce=true で免疫判定用に明示
 
         // 🗿 Golemは防御を無視されると反撃してくる
         if (enemy.data && enemy.data.name === "Golem") {
             const counterDmg = 6;
             player.hp = Math.max(0, player.hp - counterDmg);
             if (typeof createDamagePopup === 'function') createDamagePopup(counterDmg, false);
-            customAlert(`🗿 Golemの反撃！防御を無視された怒りでプレイヤーに ${counterDmg} ダメージ！`);
             if (player.hp <= 0) gameover();
         }
     }
@@ -103,21 +119,21 @@ const adrenalineBonus = player.status.adrenalineAtk || 0;
 	card.value=card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
         player.hp -= card.hpCost;
         if (player.hp < 1) gameover();
-        damageEnemy(card.value);
+        damageEnemy(card.value, false, false, card.cat);
     }
 
 //残りエネルギー×〇ダメージしてエネルギーを0
     if (card.type === "energyAttack") {
 	let plus=(card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
         const remain = player.energy;
-        damageEnemy(remain * card.value + plus);
+        damageEnemy(remain * card.value + plus, false, false, card.cat);
         player.energy = 0;
     }
 
 //防御値をダメージして防御を0
     if (card.type === "blockAttackFull") {
 	player.block=player.block + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
-        damageEnemy(player.block);
+        damageEnemy(player.block, false, false, card.cat);
         player.block = 0;
     }
 
@@ -125,9 +141,9 @@ const adrenalineBonus = player.status.adrenalineAtk || 0;
 //〇ダメージ、敵が火傷状態なら+〇ダメージ
     if (card.type === "burnplus") {
 	card.value=card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
-        damageEnemy(card.value);
+        damageEnemy(card.value, false, false, card.cat);
 	if (enemy.status && enemy.status.burn > 0) {
-	    damageEnemy(card.status);
+	    damageEnemy(card.status, false, false, card.cat);
 	}
     }
 
@@ -135,7 +151,7 @@ const adrenalineBonus = player.status.adrenalineAtk || 0;
     if (card.type === "hpmindamage") {
 	if (player.hp <= player.maxHp * (card.nowhp * 0.01)) {
     	    card.value=card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
-	    damageEnemy(card.value);
+	    damageEnemy(card.value, false, false, card.cat);
 	}
     }
   
@@ -143,7 +159,7 @@ const adrenalineBonus = player.status.adrenalineAtk || 0;
     if (card.type === "enemyhpmaxdamage") {
 	if (enemy.hp === enemy.maxHp) { 
 	    card.value=card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
-	    damageEnemy(card.value);
+	    damageEnemy(card.value, false, false, card.cat);
 	}
     }
 
@@ -153,7 +169,7 @@ if (card.type === "nkai") {
     player.status.nkaiCount = (player.status.nkaiCount || 0) + 1;
 
     let finalDamage = (card.value || 0) + player.status.nkaiCount +  adrenalineBonus;
-    damageEnemy(finalDamage);
+    damageEnemy(finalDamage, false, false, card.cat);
 }
 
 //確率即死or自傷
@@ -192,7 +208,7 @@ if (card.type === "gambling") {
     if (card.type === "handSacrifice") {
         const count = hand.length - 1;
 	card.plus =(card.cat === "atk" ? comboBonus:0);
-        damageEnemy(count * card.value + card.plus + adrenalineBonus);
+        damageEnemy(count * card.value + card.plus + adrenalineBonus, false, false, card.cat);
         discardPile.push(
             ...hand.filter((c, i) => i !== index)
         );
@@ -203,23 +219,23 @@ if (card.type === "gambling") {
 //相手のHPが〇以下なら〇ダメージ
     if (card.type === "execute") {
 	card.value = card.value + (card.cat === "atk" ? comboBonus:0) + adrenalineBonus;
-        if (enemy.hp <= card.value) damageEnemy(card.value);
+        if (enemy.hp <= card.value) damageEnemy(card.value, false, false, card.cat);
     }
 
 //対ドラゴン (大文字の "Dragon" と小文字の "dragon" 両方に対応)
     if (card.type === "VsDragon" && enemy.data && (enemy.data.name === "Dragon" || enemy.data.name === "dragon")) {
         let finalDamage = card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
-        damageEnemy(finalDamage);
+        damageEnemy(finalDamage, false, false, card.cat);
     }
 //対マギカ (大文字の "Magica" と小文字の "magica" 両方に対応)
     if (card.type === "VsMagica" && enemy.data && (enemy.data.name === "Magica" || enemy.data.name === "magica")) {
         let finalDamage = card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
-        damageEnemy(finalDamage);
+        damageEnemy(finalDamage, false, false, card.cat);
     }
 //対ブースト (大文字の "Boost" と小文字の "boost" 両方に対応)
     if (card.type === "VsBoost" && enemy.data && (enemy.data.name === "Boost" || enemy.data.name === "boost")) {
         let finalDamage = card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
-        damageEnemy(finalDamage);
+        damageEnemy(finalDamage, false, false, card.cat);
     }
 
 // 捨て札の枚数分ダメージ
@@ -227,7 +243,7 @@ if (card.type === "discardSaber") {
     let currentDiscardPile = window.discardPile || (typeof discardPile !== 'undefined' ? discardPile : null);
     let dmg = currentDiscardPile ? currentDiscardPile.length : 0;
     let finalDamage = dmg + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
-    damageEnemy(finalDamage); 
+    damageEnemy(finalDamage, false, false, card.cat); 
 }
 
 //敵が火傷、毒、凍結の3つの状態異常を持っているなら〇ダメージ
@@ -240,7 +256,7 @@ if (card.type === "elementalFeast") {
     if (hasBurn && hasPoison && hasFreeze) {
         dmg = card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
     }
-    damageEnemy(dmg);
+    damageEnemy(dmg, false, false, card.cat);
 }
 
 // 手札の呪いカードの枚数×〇ダメージ
@@ -248,7 +264,7 @@ if (card.type === "curseBurst") {
     // 手札（hand）の中から、カテゴリやタイプが "curse" の枚数をカウント
     let curseCount = window.hand.filter(c => c.cat === "Curse" || c.type === "curse").length;
     let dmg = curseCount * card.value + (card.cat === "atk" ? comboBonus : 0) + adrenalineBonus;
-    damageEnemy(dmg);
+    damageEnemy(dmg, false, false, card.cat);
 }
 
 
@@ -261,7 +277,7 @@ if (card.type === "curseBurst") {
         
         let finalDamage = baseDmg + currentComboBonus + currentAdrenalineBonus;
         
-        damageEnemy(finalDamage);
+        damageEnemy(finalDamage, false, false, card.cat);
 
         let blockAmount = card.blockValue || 5;
         
@@ -279,7 +295,7 @@ if (card.type === "curseBurst") {
 	}
 
 	const damage = fieldCount * card.value;
-	damageEnemy(damage);
+	damageEnemy(damage, false, false, card.cat);
     }
 
 //複数回ダメージ
@@ -298,7 +314,7 @@ while (isHitting && count < 10) {
         isHitting = false;
     } else {
         // 攻撃成功！
-        damageEnemy(finalDamage);
+        damageEnemy(finalDamage, false, false, card.cat);
         count++; // 回数を増やす
     }
 }
@@ -316,13 +332,17 @@ while (isHitting && count < 10) {
 
 //〇ダメージ＋毒〇
     if (card.type === "poisonAttack") {
-        damageEnemy(card.value);
-        if (canApplyPoison) {
-            enemy.status.poisonList.push({
-                value: card.status,
-                duration: 3,
-                isNew: true
-            });
+        if (typeof isEnemyImmuneToStatusEffects === 'function' && isEnemyImmuneToStatusEffects()) {
+            // 状態異常無効の敵にはダメージ・毒付与ともに一切効かない
+        } else {
+            damageEnemy(card.value, false, false, card.cat);
+            if (canApplyPoison) {
+                enemy.status.poisonList.push({
+                    value: card.status,
+                    duration: 3,
+                    isNew: true
+                });
+            }
         }
     }
 
@@ -346,7 +366,7 @@ while (isHitting && count < 10) {
                 isNew: true
             });
         }
-        if (!enemy.data.immuneStatus) {
+        if (canApplyBurnToEnemy()) {
             enemy.status.burn = 1;
             enemy.block = Math.floor(enemy.block / 2);
         }
@@ -354,40 +374,45 @@ while (isHitting && count < 10) {
 
 //〇ダメージ＋火傷
     if (card.type === "burnAttack") {
-        damageEnemy(card.value);
-        if (!enemy.data.immuneStatus) {
-            enemy.status.burn = 1;
-            enemy.block = Math.floor(enemy.block / 2);
+        if (typeof isEnemyImmuneToStatusEffects === 'function' && isEnemyImmuneToStatusEffects()) {
+            // 状態異常無効の敵にはダメージ・火傷付与ともに一切効かない
+        } else {
+            damageEnemy(card.value, false, false, card.cat);
+            if (canApplyBurnToEnemy()) {
+                enemy.status.burn = 1;
+                enemy.block = Math.floor(enemy.block / 2);
+            }
         }
     }
 
 
 //凍結〇+〇ダメージ
     if (card.type === "freezeAttack") {
-        if (!enemy.data.immuneStatus) {
-            // 絶対零度状態の間、または凍結を受け付けない特性(neverFreeze)を持つ敵には凍結しない
-            if (enemy.data.neverFreeze) {
-                customAlert("👁️‍🗨️ 敵は凍結を受け付けない…");
-            } else if (!(enemy.status.absoluteZeroTurns > 0)) {
+        if (!(typeof isEnemyImmuneToStatusEffects === 'function' && isEnemyImmuneToStatusEffects())) {
+            // 絶対零度状態の間、または凍結・絶対零度への耐性を持つ敵には凍結しない
+            if (!(enemy.status.absoluteZeroTurns > 0)) {
                 enemy.status.freeze = card.status;
-            } else {
-                customAlert("❄️ 敵は絶対零度状態のため、凍結は効果がなかった…");
             }
-	    damageEnemy(card.value);
+	    damageEnemy(card.value, false, false, card.cat);
         }
     }
 
 //〇ダメージ+スタン
     if (card.type === "stunAttack") {
-        damageEnemy(card.value);
-        if (!enemy.data.immuneStatus) {
-            enemy.status.stun = 1;
+        if (typeof isEnemyImmuneToStatusEffects === 'function' && isEnemyImmuneToStatusEffects()) {
+            // 状態異常無効の敵にはダメージ・スタンともに一切効かない
+        } else {
+            damageEnemy(card.value, false, false, card.cat);
+            if (!enemy.data.neverStun) {
+                enemy.status.stun = 1;
+            }
         }
     }
 
 //毒の合計値を〇倍にして〇ターンにする。
     if (card.type === "poisonpoison") {
-        if (enemy.status.poisonList && enemy.status.poisonList.length > 0) {
+        const isStatusImmune = typeof isEnemyImmuneToStatusEffects === 'function' && isEnemyImmuneToStatusEffects();
+        if (!isStatusImmune && enemy.status.poisonList && enemy.status.poisonList.length > 0) {
                         let totalPoisonValue = 0; 
             enemy.status.poisonList.forEach(p => {
                 totalPoisonValue += p.value;
@@ -462,12 +487,11 @@ if (card.type === "buffMeditation") {
 
 //絶対零度状態を付与する。※凍結状態でなければ不発（何も起こらない）。成立時は凍結を解除する
 if (card.type === "grantAbsoluteZero") {
-        if (enemy.data && enemy.data.immuneStatus) {
-            customAlert("敵は状態異常無効のため、絶対零度は効果がなかった…");
-        } else if (enemy.data && enemy.data.neverFreeze) {
-            customAlert("👁️‍🗨️ 敵は凍結・絶対零度を無効化する…");
-        } else if (!(enemy.status.freeze > 0)) {
-            customAlert("❄️ 絶対零度は敵が凍結状態ではないため不発に終わった…");
+        if (typeof isEnemyImmuneToStatusEffects === 'function' && isEnemyImmuneToStatusEffects()) {
+            // 状態異常無効の敵には効かない
+        } else if (!(enemy.status && enemy.status.freeze > 0)) {
+            // 凍結状態でないため不発
+            customAlert("❄️ 敵が凍結状態ではないため、絶対零度は不発だった…");
         } else {
             let turns = card.turn || 1;
             if (card.bonusChance && Math.random() < card.bonusChance) {
@@ -475,7 +499,6 @@ if (card.type === "grantAbsoluteZero") {
             }
             enemy.status.absoluteZeroTurns = (enemy.status.absoluteZeroTurns || 0) + turns;
             enemy.status.freeze = 0; // 絶対零度が成立したので凍結は解除する
-            customAlert(`❄️ 絶対零度！敵の凍結を解除し、絶対零度状態を付与した！(${turns}T)`);
         }
         if (typeof updateUI === 'function') updateUI();
     }
@@ -483,10 +506,8 @@ if (card.type === "grantAbsoluteZero") {
 
 //敵を凍結状態にしてから絶対零度状態を付与する。絶対零度が成立した時点で凍結は解除される
 if (card.type === "freezeThenAbsoluteZero") {
-        if (enemy.data && enemy.data.immuneStatus) {
-            customAlert("敵は状態異常無効のため、凍結・絶対零度は効果がなかった…");
-        } else if (enemy.data && enemy.data.neverFreeze) {
-            customAlert("👁️‍🗨️ 敵は凍結・絶対零度を無効化する…");
+        if (typeof isEnemyImmuneToStatusEffects === 'function' && isEnemyImmuneToStatusEffects()) {
+            // 状態異常無効の敵には効かない
         } else {
             enemy.status.freeze = card.freezeTurn || 1;
 
@@ -496,7 +517,6 @@ if (card.type === "freezeThenAbsoluteZero") {
             }
             enemy.status.absoluteZeroTurns = (enemy.status.absoluteZeroTurns || 0) + turns;
             enemy.status.freeze = 0; // 絶対零度が成立したので凍結は解除する
-            customAlert(`❄️ 敵を凍結させ、即座に絶対零度状態へ移行した！(${turns}T)`);
         }
         if (typeof updateUI === 'function') updateUI();
     }
@@ -508,7 +528,6 @@ if (card.type === "nextTurnEnergy") {
 	    card.value = card.value + card.plusValue;
 	}
         player.status.nextTurnEnergyBonus = (player.status.nextTurnEnergyBonus || 0) + (card.value || 2);
-        customAlert(`⚡ 次のターン、エネルギーが+${card.value || 2}される！`);
         if (typeof updateUI === 'function') updateUI();
     }
 
@@ -519,7 +538,6 @@ if (card.type === "firstCardDraw") {
             for (let i = 0; i < (card.value || 3); i++) {
                 if (typeof drawOneCard === 'function') drawOneCard();
             }
-            customAlert(`🃏 幸先の良いスタート！カードを${card.value || 3}枚引いた！`);
             if (typeof renderHand === 'function') renderHand();
         } else {
             customAlert("🃏 1ターン目の最初のカードではないため、効果は発動しなかった…");
@@ -552,6 +570,12 @@ if (card.type === "cancelBan") {
             blockGain = Math.round(blockGain * 1.25);
         }
         player.block += blockGain;
+
+        // 🧼 過労・漏電の状態異常を解除する（cureFatigueLeakフラグ付きカード用）
+        if (card.cureFatigueLeak) {
+            player.status.fatigue = 0;
+            player.status.leak = 0;
+        }
     }
 
 //回復〇
@@ -731,7 +755,25 @@ if (card.type === "DiscardDraw") {
         if (typeof updateUI === 'function') updateUI();
     }
 
+    // 🌪️ Tempest：カードを使用するたびに、今使った1枚を除く残りの手札をデッキへ戻してシャッフルし、同じ枚数だけドローし直す
+    if (enemy.data && enemy.data.name === "Tempest") {
+        const scattered = hand.filter(c => c !== card);
+        if (scattered.length > 0) {
+            scattered.forEach(c => {
+                const i = hand.indexOf(c);
+                if (i !== -1) hand.splice(i, 1);
+            });
+            deck.push(...scattered);
+            deck.sort(() => Math.random() - 0.5);
 
+            const redrawCount = scattered.length;
+            for (let i = 0; i < redrawCount; i++) {
+                if (typeof drawOneCard === 'function') drawOneCard();
+            }
+
+            customAlert(`🌪️ 暴風が手札を ${redrawCount} 枚デッキへ巻き戻し、引き直した！`);
+        }
+    }
 
   
 renderHand();

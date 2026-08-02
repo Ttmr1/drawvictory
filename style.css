@@ -330,6 +330,7 @@ button:hover:not(:disabled){
 .shop   { background: linear-gradient(135deg, #8e44ad, #6c3483) !important; border: 2px solid #9b59b6; }
 .rest   { background: linear-gradient(135deg, #27ae60, #1e8449) !important; border: 2px solid #2ecc71; }
 .darkshop { background: linear-gradient(135deg, #2c3e50, #1a252f) !important; border: 2px solid #7f8c8d; }
+.elite  { background: linear-gradient(135deg, #4a2545, #1a0d1a) !important; border: 2px solid #ffd700; box-shadow: 0 6px 15px rgba(255,215,0,0.35); }
 
 /* 既存の縦線パーツは横並びではレイアウトを壊すため完全非表示 */
 .line {
