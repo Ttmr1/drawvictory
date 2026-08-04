@@ -6,6 +6,10 @@ window.isRestRoomDeletionMode = false;
 // 鍛冶屋でのアップグレード回数を管理する変数（最大7回まで）
 window.upgradeCount = window.upgradeCount || 0;
 function openMap(){
+    // 👹 マップ画面に戻る際は、戦闘中に表示していた敵の説明欄を必ず隠す
+    const enemyExplainBox = document.getElementById("enemyExplainArea");
+    if (enemyExplainBox) enemyExplainBox.style.display = "none";
+
     const rewardScreen = document.getElementById("rewardScreen");
     const rewardTitle = document.getElementById("rewardTitle");
     
@@ -42,7 +46,7 @@ function openMap(){
         }
     }
     const hpPercent = player.maxHp > 0 ? Math.floor((player.hp / player.maxHp) * 100) : 0;
-    mapStatusDisp.innerHTML = `🪜 Floor: <span style="color:#54a0ff;">${floor}/40</span> &nbsp;&nbsp;&nbsp;&nbsp; ` +
+    mapStatusDisp.innerHTML = `🪜 Floor: <span style="color:#54a0ff;">${floor}➡${floor + 1} / 40</span> &nbsp;&nbsp;&nbsp;&nbsp; ` +
                               `❤️ 体力: <span style="color:#ff6b6b;">${player.hp} / ${player.maxHp} (${hpPercent}%)</span> &nbsp;&nbsp;&nbsp;&nbsp; ` +
                               `💰 所持金: <span style="color:#feca57;">${player.gold || 0}G</span>`;
 
@@ -58,8 +62,9 @@ function openMap(){
     let attempt = 0;
     while (attempt < 10) {
         attempt++;
-        // 🎲 3つ生成するか4つ生成するかをランダムに決定（50%ずつの確率）
-        nodeCount = Math.random() < 0.5 ? 3 : 4;
+        // 🎲 3	or4or5つ生成するかをランダムに決定（45%で3,50%で4,5%で5）
+	const rand = Math.random();
+	nodeCount = rand < 0.45 ? 3 : rand < 0.90 ? 4 : 5;
         if (floor === 19 || floor === 39) {
             nodeCount = 1;
         }
@@ -69,9 +74,10 @@ function openMap(){
         for (let i = 0; i < nodeCount; i++) {
             let r = Math.random();
             let type = r < 0.45 ? "battle"    // 0.00 ～ 0.45 (45%)バトル
-                     : r < 0.60 ? "shop"      // 0.45 ～ 0.60 (15%)ショップ
+                     : r < 0.60 ? "shop"      // 0.42 ～ 0.60 (15%)ショップ
                      : r < 0.80 ? "rest"      // 0.60 ～ 0.80 (20%)休憩所
-                     : "darkshop";	      // 0.80 ～ 1.00 (20%)闇市
+                     : r < 0.95 ? "darkshop"  // 0.80 ～ 0.95 (15%)闇市
+                     : "merchant";            // 0.95 ～ 1.00 ( 5%)行商人
 
             if (floor === 19 || floor === 39) {
                 type = "battle";
@@ -145,6 +151,7 @@ function openMap(){
         if(type==="shop"){ icon="💰"; label="ショップ"; }
         if(type==="rest"){ icon="💤"; label="休憩所"; }
         if(type==="darkshop"){ icon="💴"; label="闇市 ";}	
+        if(type==="merchant"){ icon="🧑‍💼"; label="行商人"; }
         if(floor===19 || floor===39){ icon="🐉"; label="ボス戦"; }
 
         node.innerHTML = `<span style="font-size:48px;">${icon}</span><br><b style="font-size:24px;">${label}</b>`;
@@ -172,6 +179,10 @@ function openMap(){
                 mapScreen.style.display="none";
                 floor++;
                 triggerDarkMarket();
+            }else if(type==="merchant"){
+                // 💡 行商人のマスはfloorを変更しない（同じ階層で再度マップ分岐を選択する）
+                mapScreen.style.display="none";
+                if (typeof triggerMerchant === 'function') triggerMerchant();
             }
         };
 
@@ -930,6 +941,11 @@ if (isOrcBerserk) {
                 uiEnemyAttack.style.color = "#a0c0ff"; 
             } 
             else if (isAbsoluteZero) {
+                // 絶対零度状態中は一目で分かるように文字色を青っぽくする
+                uiEnemyAttack.innerText = `⚔️ 攻撃: ${minAtk} ～ ${maxAtk}`;
+		if(enemy.data && enemy.data.name === "Ork" && enemy.hp <= (enemy.maxHp * 0.5)){
+		    uiEnemyAttack.innerText = `⚔️ 攻撃: ${minAtk*2} ～ ${maxAtk*2}`;
+		}
                 uiEnemyAttack.style.color = "blue"; 
             } 
             else if (enemy.data && enemy.data.name === "Ork" && enemy.hp <= (enemy.maxHp * 0.5)) {

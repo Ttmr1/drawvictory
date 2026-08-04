@@ -578,10 +578,45 @@ if (card.type === "cancelBan") {
         }
     }
 
+//防御〇＋次のターンも同じ分だけブロック（持ち越し）
+    if (card.type === "blockCarry") {
+	card.value = card.value + (card.cat === "blk" ? comboBonus:0);
+        let blockGain = card.value;
+        // 🧘 瞑想：blkカテゴリのカードで得る防御が1.25倍になる
+        if (card.cat === "blk" && player.status && player.status.meditation > 0) {
+            blockGain = Math.round(blockGain * 1.25);
+        }
+        player.block += blockGain;
+        // 次のターン開始時に同じ量のブロックを追加付与する（battle.js側のターン開始処理で消費）
+        player.status.carryBlockNext = (player.status.carryBlockNext || 0) + card.value;
+    }
+
 //回復〇
     if (card.type === "heal") {
 	card.value = card.value + (card.cat === "rec" ? comboBonus:0);
         player.hp = Math.min(player.maxHp, player.hp + card.value);
+    }
+
+//手札をvalue1枚選んで捨て、value回復（選択式。DiscardDrawの選択モードを流用）
+    if (card.type === "discardHeal") {
+        const discardCount = card.value1 || 1;
+        const healAmount = card.value + (card.cat === "rec" ? comboBonus : 0);
+
+        if (hand.length <= 1) {
+            // 捨てられる他の手札がないため、回復だけ発生させる
+            player.hp = Math.min(player.maxHp, player.hp + healAmount);
+        } else {
+            window.discardSelectMode = {
+                active: true,
+                requiredCount: discardCount,
+                drawCount: 0,
+                healAmount: healAmount,
+                selectedIndices: [],
+                usedCardIndex: index
+            };
+            customAlert(`手札から捨てるカードを ${Math.min(discardCount, hand.length - 1)} 枚、クリックして選んでください。`);
+            if (typeof updateUI === 'function') updateUI();
+        }
     }
 
 //回復〇＋防御〇
@@ -728,6 +763,26 @@ if (card.type === "DiscardDraw") {
         
         // 手札のUIを更新する（バトル画面の再描画関数があれば呼び出す）
         if (typeof updateUI === 'function') updateUI();
+    }
+
+    // 手札からvalue枚選び、デッキから永久に削除する（選択式。DiscardDrawの選択モードを流用）
+    if (card.type === "exileCard") {
+        const exileCount = card.value || 1;
+
+        if (hand.length <= 1) {
+            customAlert("選択できる他の手札がありません。効果をスキップします。");
+        } else {
+            window.discardSelectMode = {
+                active: true,
+                requiredCount: exileCount,
+                drawCount: 0,
+                exile: true,
+                selectedIndices: [],
+                usedCardIndex: index
+            };
+            customAlert(`デッキから削除するカードを ${Math.min(exileCount, hand.length - 1)} 枚、クリックして選んでください。`);
+            if (typeof updateUI === 'function') updateUI();
+        }
     }
 
     // 浄化：デッキ・手札・捨て札から呪いカードを全て除去する（このカード自身は捨て札に送らず除去される）

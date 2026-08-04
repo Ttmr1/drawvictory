@@ -44,6 +44,63 @@ function updateAreaConfigLabel() {
     }
 }
 
+// 👹 敵の説明 ON/OFF を切り替える関数（エリア効果のトグルと同じ形式）
+function toggleEnemyExplanation() {
+    if (typeof window.isEnemyExplanationEnabled === "undefined") {
+        window.isEnemyExplanationEnabled = false;
+    }
+    window.isEnemyExplanationEnabled = !window.isEnemyExplanationEnabled;
+
+    // 切り替わった瞬間の状態（true/false）をローカルストレージへ即時保存
+    localStorage.setItem("mini_spire_enemy_explanation", window.isEnemyExplanationEnabled);
+
+    // 画面上の見た目（設定モーダルのラベル）を更新
+    updateEnemyExplanationConfigLabel();
+
+    // 戦闘中であれば、敵説明欄の表示もすぐに反映する
+    if (typeof updateEnemyExplanationDisplay === "function") {
+        updateEnemyExplanationDisplay();
+    }
+}
+
+/**
+ * ⚙️ モーダル内の「敵の説明」ON/OFFラベルの文字と見た目を現在の状態に合わせる関数
+ */
+function updateEnemyExplanationConfigLabel() {
+    const label = document.getElementById("configEnemyExplainStatusLabel");
+    if (!label) return;
+
+    if (window.isEnemyExplanationEnabled) {
+        label.innerText = "ON";
+        label.style.color = "#4caf50";
+        label.style.background = "rgba(76, 175, 80, 0.1)";
+        label.style.borderColor = "#4caf50";
+    } else {
+        label.innerText = "OFF";
+        label.style.color = "#f44336";
+        label.style.background = "rgba(244, 67, 54, 0.1)";
+        label.style.borderColor = "#f44336";
+    }
+}
+
+// 👹 敵の説明欄（戦闘/エリート戦中）の表示・非表示と内容更新を行う関数
+function updateEnemyExplanationDisplay() {
+    const box = document.getElementById("enemyExplainArea");
+    const textEl = document.getElementById("enemyExplainText");
+    if (!box || !textEl) return;
+
+    const desc = (typeof getEnemyDescription === "function" && enemy && enemy.data)
+        ? getEnemyDescription(enemy.data)
+        : "";
+
+    if (window.isEnemyExplanationEnabled && window.inBattle && desc) {
+        textEl.innerHTML = desc;
+        box.style.display = "block";
+    } else {
+        box.style.display = "none";
+    }
+}
+
 /**
  * ⚙️ 設定モーダルの開閉を管理する関数
  * HTMLの「ゲーム設定」ボタンから呼び出されます
@@ -59,7 +116,8 @@ function toggleConfigModal() {
         } else {
             configModal.style.display = "flex";
             // モーダルを開いたタイミングで現在のON/OFFラベルの状態を同期
-            updateAreaConfigLabel(); 
+            updateAreaConfigLabel();
+            updateEnemyExplanationConfigLabel();
         }
     }
 }
@@ -183,6 +241,11 @@ if (enemy.data.name === "Trait") {
     if(enemyNameEl) enemyNameEl.innerText = getEnemyDisplayName();
     if(enemyIconEl) enemyIconEl.innerText = enemy.data.icon;
 
+    // 👹 敵の説明ON時、戦闘/エリート戦開始時に敵の特徴を表示する
+    if (typeof updateEnemyExplanationDisplay === "function") {
+        updateEnemyExplanationDisplay();
+    }
+
     player.block = 0;
     inBattle = true;
     if((player.fields.def_up || 0) > 0) {
@@ -243,6 +306,9 @@ console.log(enemy.status.traits);
     // 🌕 Luna: 1ターン目から自己回復（または忘却判定）を行う
     if (typeof applyLunaTurnEffect === 'function') applyLunaTurnEffect();
 
+    // 🎭 Puppeteer: 戦闘開始時に手札の1枚を「操られ」状態にする
+    if (typeof applyPuppeteerBattleStart === 'function') applyPuppeteerBattleStart();
+
     if(typeof renderHand === 'function') renderHand();
     if(typeof updateUI === 'function') updateUI();
 }
@@ -259,10 +325,24 @@ function playCard(index){
             mode.maxSelectable = Math.min(mode.requiredCount, hand.length - 1);
         }
 
-        // ★クリックした瞬間にそのカードを手札から取り除き、捨て札へ送る
+        // ★クリックした瞬間にそのカードを手札から取り除く
         const discardedCard = hand[index];
-        if (typeof discardPile !== 'undefined') discardPile.push(discardedCard);
-        hand.splice(index, 1);
+
+        if (mode.exile) {
+            // 🗑️ カード削除：捨て札に送らず、セーブデータのデッキから永久に1枚減らす
+            hand.splice(index, 1);
+            const slot = window.currentSlot || 0;
+            if (window.savedDecks[slot] && window.savedDecks[slot][discardedCard.id] > 0) {
+                window.savedDecks[slot][discardedCard.id]--;
+                if (window.savedDecks[slot][discardedCard.id] <= 0) {
+                    delete window.savedDecks[slot][discardedCard.id];
+                }
+                localStorage.setItem("mini_spire_saved_decks", JSON.stringify(window.savedDecks));
+            }
+        } else {
+            if (typeof discardPile !== 'undefined') discardPile.push(discardedCard);
+            hand.splice(index, 1);
+        }
         mode.selectedIndices.push(index);
 
         // ★即座に手札表示を更新（選んだカードがその場で消える）
@@ -273,6 +353,17 @@ function playCard(index){
             // その後、b枚引く
             for (let i = 0; i < mode.drawCount; i++) {
                 if (typeof drawOneCard === 'function') drawOneCard();
+            }
+
+            // 💖 手札を捨てて回復するカード用：回復を適用
+            if (mode.healAmount) {
+                player.hp = Math.min(player.maxHp, player.hp + mode.healAmount);
+                customAlert(`💖 ${mode.healAmount} 回復した！`);
+            }
+
+            // 🗑️ カード削除用の完了メッセージ
+            if (mode.exile) {
+                customAlert(`🗑️ カードをデッキから削除した！`);
             }
 
             // 選択モードを終了（初期化）
@@ -369,6 +460,15 @@ function playCard(index){
             shouldCopy = true;
             window.nextCardCopyActive = false; // ここでフラグを消費
         }
+    }
+
+    // 🎭 Puppeteer：操られたカードを使うと、カードの効果に加えて敵が回復する
+    if (card.puppeted && enemy.data && enemy.data.name === "Puppeteer") {
+        const healAmount = Math.floor(enemy.maxHp * 0.15);
+        enemy.hp = Math.min(enemy.maxHp, enemy.hp + healAmount);
+        if (typeof truncateToOneDecimal === 'function') enemy.hp = truncateToOneDecimal(enemy.hp);
+        card.puppeted = false;
+        customAlert(`🎭 操られたカードだ…！敵が ${healAmount} 回復した！`);
     }
 
         // 効果発動
@@ -613,7 +713,12 @@ if(enemy.data.name==="Trait"){
             }
             
             damageEnemy(burnDamage, true); 
-            
+
+            // 🦎 Salamander：火傷ダメージを受けるたびに攻撃力が1.25倍になる（上限はBull等と同様の式）
+            if (enemy.data && enemy.data.name === "Salamander") {
+                enemy.attack = Math.min(Math.floor(enemy.attack * 1.25), Math.floor((5 + floor * 2.25) * 2));
+            }
+
             enemy.status.burn--; 
         }
     }
@@ -690,9 +795,9 @@ if(enemy.data.name==="Trait"){
 
         //グリーディ10%でデッキからランダムにカードを奪う
 if (enemy.data && enemy.data.name === "Greedy") {
-    if (Math.random() < 0.1) {
+    if (Math.random() < 0.15) {
 
-        const currentDeck = savedDecks[currentSlot];
+        const currentDeck = savedDecks[currentSlot] || {};
 
         // デッキに存在するカードIDだけ取得
         const cardIds = Object.keys(currentDeck).filter(id => currentDeck[id] > 0);
@@ -705,20 +810,30 @@ if (enemy.data && enemy.data.name === "Greedy") {
             // カード情報取得
             const stolenCard = allCardsMaster.find(c => c.id == randomId);
 
-            // 1枚減らす
-            currentDeck[randomId]--;
+            // 万一マスターデータに存在しないIDだった場合は、
+            // エラーで処理が止まらないよう安全に諦める（ターン進行を優先）
+            if (!stolenCard) {
+                console.warn('Greedy: allCardsMasterに存在しないカードIDが選ばれたためスキップしました:', randomId);
+            } else {
+                // 1枚減らす
+                currentDeck[randomId]--;
 
-            // 0枚になったら削除
-            if (currentDeck[randomId] <= 0) {
-                delete currentDeck[randomId];
+                // 0枚になったら削除
+                if (currentDeck[randomId] <= 0) {
+                    delete currentDeck[randomId];
+                }
+                // セーブ
+                localStorage.setItem(
+                    "mini_spire_saved_decks",
+                    JSON.stringify(savedDecks)
+                );
+
+                if (typeof customAlert === 'function') {
+                    customAlert(`🦹 Greedyに\n「${stolenCard.name}\n${stolenCard.desc}」\nを奪われた！`);
+                } else {
+                    alert(`Greedyに\n「${stolenCard.name}\n${stolenCard.desc}」\nを奪われた！`);
+                }
             }
-            // セーブ
-            localStorage.setItem(
-                "mini_spire_saved_decks",
-                JSON.stringify(savedDecks)
-            );
-
-            alert(`Greedyに\n「${stolenCard.name}\n${stolenCard.desc}」\nを奪われた！`);
         }
     }
 }
@@ -1004,7 +1119,13 @@ if (enemy.data && enemy.data.name === "Greedy") {
     player.block = 0;
     
     if (window.clownEnergyDebuff) {
-        player.maxEnergy = Math.max(1, Math.floor(player.maxEnergy / 2));
+        // 🤡 常に「元々の（クラウン効果を受ける前の）最大エネルギー」の半分にする。
+        //    既に半分になっている値をさらに半分にしてしまうと連続でどんどん下がってしまうため、
+        //    毎回 window.originalMaxEnergy（戦闘開始時点の基準値）を基準に計算し直す。
+        const baseMaxEnergyForClown = (typeof window.originalMaxEnergy === 'number' && window.originalMaxEnergy > 0)
+            ? window.originalMaxEnergy
+            : player.maxEnergy;
+        player.maxEnergy = Math.max(1, Math.floor(baseMaxEnergyForClown / 2));
         window.clownEnergyDebuff = false; 
         customAlert(`🤡 ピエロの魔力により、このターンの最大エネルギーが【${player.maxEnergy}】に制限された！`);
     } else {
@@ -1026,7 +1147,13 @@ if (enemy.data && enemy.data.name === "Greedy") {
     window.cardsPlayedThisTurn = 0;
     
     if(player.status.healTurns > 0) player.hp = Math.min(player.maxHp, player.hp + player.status.heal);
-    
+
+    // 🛡️ ブロック持ち越し：前ターンに「〇ブロック持ち越し」カードを使っていれば、そのぶんのブロックを新たに付与
+    if (player.status.carryBlockNext > 0) {
+        player.block += player.status.carryBlockNext;
+        player.status.carryBlockNext = 0;
+    }
+
     if ((player.fields.def_up || 0) > 0 && player.block === 0) {
         player.block = player.fields.def_up * 2;
     }
@@ -1427,10 +1554,12 @@ function calculateScore() {
 
     let score = (deckCount * 10) + (hpPercent * 2.5) + (gold * 0.25) + (enemiesDefeated * 10);
 
-    if (floor >= 2)  score += 250;
+    if (floor >= 2)  score += 450;
     if (floor >= 20) score += 100;
     if (floor >= 40) score += 200;
-    score = score - 605;
+    score = score - 805;
+//スコアを1.1倍から0.9倍にする。
+    score = ((Math.floor(Math.random() * (1100 - 900 + 1)) + 900)/1000) * score
 
     return Math.max(0, Math.floor(score));
 }
@@ -1547,6 +1676,28 @@ function isAutoBattleCardAllowed(card) {
     // 🚫 絶対零度付与カードは、敵が凍結状態の時だけ使う
     if (card.type === "grantAbsoluteZero" && !(enemy.status && enemy.status.freeze > 0)) return false;
 
+    // 🚫 「敵HP○○以下なら××ダメージ」系（execute）は、実際に条件（敵HPが閾値以下）を満たす時だけ使う
+    if (card.type === "execute" && (enemy.hp || 0) > (Number(card.value) || 0)) return false;
+
+    // 🚫 「敵のHPがMAXなら××ダメージ」系（enemyhpmaxdamage）は、敵HPが最大の時だけ使う
+    if (card.type === "enemyhpmaxdamage" && !((enemy.hp || 0) >= (enemy.maxHp || 0) && (enemy.maxHp || 0) > 0)) return false;
+
+    // 🚫 「敵がboost/dragon/magicaなら××ダメージ」系（VsBoost/VsDragon/VsMagica）は、
+    //    対象の敵タイプと一致する時だけ使う（それ以外の敵には使わない）
+    const VS_TYPE_TARGET = { VsBoost: "boost", VsDragon: "dragon", VsMagica: "magica" };
+    if (VS_TYPE_TARGET[card.type]) {
+        const targetName = VS_TYPE_TARGET[card.type];
+        const enemyName = (data.name || "").toLowerCase();
+        if (enemyName !== targetName) return false;
+    }
+
+    // 🚫 「HP消費してダメージ」系（hpAttack）は、消費後の残りHPが最大HPの1/4以下になってしまう場合は使わない
+    if (card.type === "hpAttack") {
+        const hpCost = Number(card.hpCost) || 0;
+        const remainingHp = player.hp - hpCost;
+        if (remainingHp <= player.maxHp / 4) return false;
+    }
+
     return true;
 }
 
@@ -1623,6 +1774,19 @@ function pickAutoBattleCardIndex() {
         if (freezeIdx !== -1) return freezeIdx;
     }
 
+    // ①.5 敵が火傷状態でない場合、以下のいずれかに当てはまるなら火傷付与カードを最優先で使う
+    //     ・敵のブロック値が0より多い（ブロックが残っているうちに火傷を仕込んでおきたい）
+    //     ・手札に burnplus（火傷状態なら追加ダメージ）カードがある（先に火傷にしてから叩きたい）
+    const isEnemyBurning = !!(enemy.status && enemy.status.burn > 0);
+    if (!isEnemyBurning) {
+        const hasBlockToBurnAround = (enemy.block || 0) > 0;
+        const hasBurnplusInHand = playableIndices.some(i => hand[i].type === "burnplus");
+        if (hasBlockToBurnAround || hasBurnplusInHand) {
+            const burnIdx = findIn(c => AUTO_BATTLE_BURN_TYPES.includes(c.type));
+            if (burnIdx !== -1) return burnIdx;
+        }
+    }
+
     // ② 手札の合計ダメージが敵の残りHPを上回るなら、攻撃カテゴリを最優先にする
     let categoryOrder;
     if (estimateAutoBattleHandDamage() > enemyHp) {
@@ -1636,6 +1800,16 @@ function pickAutoBattleCardIndex() {
     }
 
     for (const cat of categoryOrder) {
+        if (cat === 'atk') {
+            // 🎯 「敵のHPがMAXなら××ダメージ」系は、条件を満たしている（isAutoBattleCardAllowedで既に確認済み）なら
+            //    攻撃カード内で最優先に使う
+            const maxHpIdx = findIn(c => c.cat === 'atk' && c.type === 'enemyhpmaxdamage');
+            if (maxHpIdx !== -1) return maxHpIdx;
+
+            // 🎯 「○○ダメージ、その後ブロックが残っているなら追加ダメージ」系は、攻撃カード内で優先的に使う
+            const blockBonusIdx = findIn(c => c.cat === 'atk' && c.type === 'blockBonusAttack');
+            if (blockBonusIdx !== -1) return blockBonusIdx;
+        }
         const idx = findIn(c => c.cat === cat);
         if (idx !== -1) return idx;
     }

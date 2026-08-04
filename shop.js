@@ -339,12 +339,12 @@ function openShopMenu(){
 
 //ショップの確率
     const shopProbabilities = [
-        { type: "uncommon",   chance: 0.40 },
-        { type: "rare",     chance: 0.17 },
-        { type: "legend",   chance: 0.06 }, 
-        { type: "space",   chance: 0.02 },
-        { type: "field",    chance: 0.20 },
-        { type: "potion",   chance: 0.15 }
+        { type: "uncommon",   chance: 0.30 },
+        { type: "rare",       chance: 0.20 },
+        { type: "legend",     chance: 0.07 }, 
+        { type: "space",      chance: 0.03 },
+        { type: "field",      chance: 0.20 },
+        { type: "potion",     chance: 0.20 }
     ];
 
     let displayedFields = [];
@@ -458,11 +458,11 @@ function triggerDarkMarket() {
 //闇市の確率
     const probabilities = [
         { type: "uncommon",   chance: 0.20 },
-        { type: "rare",       chance: 0.35 },
+        { type: "rare",       chance: 0.25 },
         { type: "legend",     chance: 0.15 },
-        { type: "space",      chance: 0.05 },
-        { type: "field",      chance: 0.15 },
-        { type: "potion",     chance: 0.10 }
+        { type: "space",      chance: 0.08 },
+        { type: "field",      chance: 0.17 },
+        { type: "potion",     chance: 0.15 }
     ];
 
     let displayedFields = [];

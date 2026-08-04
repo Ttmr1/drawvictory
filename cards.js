@@ -180,6 +180,12 @@ const allCardsMaster = [
 { id: 2205, name: "10ブロック+浄化", cost: 2, desc: "10ブロック+過労と漏電の状態異常をなくす", type: "block", value: 10, rarity: "rare", cat: "blk", isInitial: false, cureFatigueLeak: true },
 { id: 3205, name: "12ブロック+浄化", cost: 2, desc: "12ブロック+過労と漏電の状態異常をなくす", type: "block", value: 12, rarity: "legend", cat: "blk", isInitial: false, cureFatigueLeak: true },
 
+// type: "blockCarry" -> id順（〇ブロック+次のターンも同じ分だけブロック）
+{ id: 1206, name: "5ブロック持ち越し", cost: 2, desc: "5ブロック+次のターンも5ブロック", type: "blockCarry", value: 5, turn: 2, rarity: "uncommon", cat: "blk", isInitial: false },
+{ id: 2206, name: "8ブロック持ち越し", cost: 2, desc: "8ブロック+次のターンも8ブロック", type: "blockCarry", value: 8, turn: 2, rarity: "rare", cat: "blk", isInitial: false },
+{ id: 3206, name: "13ブロック持ち越し", cost: 4, desc: "13ブロック+次のターンも13ブロック", type: "blockCarry", value: 13, turn: 2, rarity: "legend", cat: "blk", isInitial: false },
+{ id: 4206, name: "15ブロック持ち越し", cost: 4, desc: "15ブロック+次のターンも15ブロック", type: "blockCarry", value: 15, turn: 2, rarity: "space", cat: "blk", isInitial: false },
+
 // ==========================================
 // 💖 cat: "rec" (回復系)
 // ==========================================
@@ -217,6 +223,11 @@ const allCardsMaster = [
 { id: 1306, name: "確率回復", cost: 3, desc: "1/3で12回復、2/3で6回復", type: "randomHeal", value: 12, value1: 6, rarity: "uncommon", cat: "rec", isInitial: false },
 { id: 2306, name: "確率回復", cost: 3, desc: "1/3で16回復、2/3で6回復", type: "randomHeal", value: 16, value1: 6, rarity: "rare", cat: "rec", isInitial: false },
 { id: 3306, name: "確率回復", cost: 4, desc: "1/3で20回復、2/3で11回復", type: "randomHeal", value: 20, value1: 11, rarity: "legend", cat: "rec", isInitial: false },
+
+// type: "discardHeal" -> id順（手札をvalue1枚選んで捨て、value回復。value1=捨てる枚数）
+{ id: 1307, name: "手札捨てて回復", cost: 2, desc: "手札を1枚捨てて9回復", type: "discardHeal", value: 9, value1: 1, rarity: "uncommon", cat: "rec", isInitial: false },
+{ id: 2307, name: "手札捨てて回復", cost: 2, desc: "手札を1枚捨てて12回復", type: "discardHeal", value: 12, value1: 1, rarity: "rare", cat: "rec", isInitial: false },
+{ id: 3307, name: "手札捨てて回復", cost: 3, desc: "手札を1枚捨てて18回復", type: "discardHeal", value: 18, value1: 1, rarity: "legend", cat: "rec", isInitial: false },
 
 // ==========================================
 // 🧪 cat: "abn" (状態異常・デバフ系)
@@ -358,6 +369,10 @@ const allCardsMaster = [
 { id: 1516, name: "禁止解除", cost: 3, desc: "使用禁止カードを全て解除する。1ターン", type: "cancelBan", duration: 1, rarity: "uncommon", cat: "oth", isInitial: false },
 { id: 2516, name: "禁止解除", cost: 5, desc: "使用禁止カードを全て解除する。2ターン", type: "cancelBan", duration: 2, rarity: "rare", cat: "oth", isInitial: false },
 { id: 3516, name: "禁止解除", cost: 4, desc: "使用禁止カードを全て解除する。2ターン", type: "cancelBan", duration: 2, rarity: "legend", cat: "oth", isInitial: false },
+
+// type: "exileCard" -> id順（手札からvalue枚選び、デッキから永久に削除する）
+{ id: 1517, name: "カード削除", cost: 4, desc: "手札から1枚選び、デッキから削除する", type: "exileCard", value: 1, rarity: "uncommon", cat: "oth", isInitial: false },
+{ id: 2517, name: "カード削除", cost: 3, desc: "手札から1枚選び、デッキから削除する", type: "exileCard", value: 1, rarity: "uncommon", cat: "oth", isInitial: false },
 
 
 // ==========================================
@@ -570,13 +585,14 @@ function renderHand() {
         }
 
         // 3. 忘却中なら「？」、正常なら決定した名前・説明文をセットする
-        const displayName = isAmnesia ? "？？？" : card.name;
+        // 🎭 Puppeteer：操られたカードには目印を付ける（忘却中は？？？を優先）
+        const displayName = isAmnesia ? "？？？" : (card.puppeted ? `🎭 ${card.name}` : card.name);
         const displayDesc = isAmnesia ? "？？？" : targetDesc; // ここを targetDesc に変更
 
 
         const div = document.createElement("div");
         const costClass = `cost-${card.cost}`;
-        div.className = `card ${card.rarity} cat-${card.cat} ${costClass}`;
+        div.className = `card ${card.rarity} cat-${card.cat} ${costClass}${card.puppeted ? " puppeted" : ""}`;
 
         // 画面には displayDesc を表示
         div.innerHTML = `<h3>${displayName}</h3><p>Cost:${card.cost}</p><p>${displayDesc}</p>`;

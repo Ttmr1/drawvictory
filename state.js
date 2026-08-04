@@ -22,6 +22,13 @@ if (localStorage.getItem("mini_spire_area_effect") === null) {
     window.isAreaEffectEnabled = localStorage.getItem("mini_spire_area_effect") === "true";
 }
 
+// 👹 敵の説明 ON/OFF（初回はデフォルトON）
+if (localStorage.getItem("mini_spire_enemy_explanation") === null) {
+    window.isEnemyExplanationEnabled = true;
+} else {
+    window.isEnemyExplanationEnabled = localStorage.getItem("mini_spire_enemy_explanation") === "true";
+}
+
 
 // 💡 ページ読み込みが完了した瞬間に、見た目を保存された状態に強制同期する
 window.addEventListener("DOMContentLoaded", () => {
@@ -33,6 +40,11 @@ window.addEventListener("DOMContentLoaded", () => {
     // 2. 🗺️ 特殊エリア効果のラベル表示（ON/OFF）を保存された状態に合わせて書き換える
     if (typeof updateAreaConfigLabel === "function") {
         updateAreaConfigLabel();
+    }
+
+    // 3. 👹 敵の説明ON/OFFのラベル表示を保存された状態に合わせて書き換える
+    if (typeof updateEnemyExplanationConfigLabel === "function") {
+        updateEnemyExplanationConfigLabel();
     }
 });
 
@@ -280,7 +292,7 @@ function switchMenuTab(tabName) {
                     <span>🃏 初期デッキ構築</span>
                 </div>
                 <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    ゲーム開始前に、<strong>任意のカードを30枚</strong>選択し、攻略へ挑みます。
+                    ゲーム開始前に、<span style="color: red;">任意のカードを30枚</span>選択し、攻略へ挑みます。
                 </div>
             </div>
 
@@ -289,8 +301,8 @@ function switchMenuTab(tabName) {
                     <span>💀 勝敗とクリア条件</span>
                 </div>
                 <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    ・<strong>敗北条件</strong>: バトル中にプレイヤーの体力が<strong>0になるとその時点でゲームオーバー</strong>（負け）となります。<br>
-                    ・<strong>勝利条件</strong>: 階層を進み、<strong>20階(と40階)に待ち受けるボス</strong>を撃破することができればゲームクリアとなります！
+                    ・<span style="color: red;">敗北条件</span>: プレイヤーの<span style="color: red;">体力が0</span>になると<span style="color: red;">ゲームオーバー</span>となります。<br>
+                    ・<span style="color: red;">勝利条件</span>: 階層を進み、20階と40階に待ち受ける<span style="color: red;">ボスを撃破</span>することができればゲームクリアとなります！
                 </div>
             </div>
 
@@ -300,8 +312,8 @@ function switchMenuTab(tabName) {
                 </div>
                 <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
                     毎ターン配られる手札からカードを自由に選択し、エネルギーを消費して敵へ攻撃を仕掛けたり、身を守ったりします。<br>
-                    獲得したブロック（防御値）は<strong>次の自分のターン開始時に0にリセット</strong>されるため、敵の出方に合わせて使い切るのが基本戦略です。
-		    <strong>スペースキー</strong>でターン終了できます。
+                    獲得したブロック（防御値）は<span style="color: red;">次の自分のターン開始時に0にリセット</span>されるため、敵の出方に合わせて使い切るのが基本戦略です。
+		    <span style="color: red;">スペースキー</span>でもターン終了できます。
                 </div>
             </div>
 
@@ -310,7 +322,7 @@ function switchMenuTab(tabName) {
                     <span>🛒 報酬とデッキの強化</span>
                 </div>
                 <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    敵を討伐すると戦利品として<strong>ゴールド（G）</strong>が手に入ります。獲得したゴールドを使い、マップ上の「ショップ」や「闇市」で強力なカード、永続するフィールド効果、一発逆転のポーション等を購入してデッキをどんどん強化していきましょう。休憩所でカードを削除してデッキを圧縮したり、休憩所の鍛冶屋でアップグレードしたりすることで強化もできます。
+                    敵を討伐すると戦利品として<span style="color: red;">ゴールド（G）</span>が手に入ります。獲得したゴールドを使い、マップ上の「ショップ」や「闇市」などで強力なカード、永続するフィールド効果、一発逆転のポーション等を購入してデッキをどんどん強化していきましょう。休憩所でカードを削除してデッキを圧縮したり、休憩所の鍛冶屋でアップグレードしたりすることで強化もできます。
                 </div>
             </div>
 
@@ -319,7 +331,7 @@ function switchMenuTab(tabName) {
                     <span>👹 敵の能力に応じた戦術</span>
                 </div>
                 <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    敵は、物理攻撃を無効化や状態異常を無効化など、それぞれが凶悪な固有能力（特徴）を持っています。<br>
+                    敵は、物理攻撃を無効化や状態異常を無効化など、それぞれが凶悪な<span style="color: red;">固有能力（特徴）</span>を持っています。<br>
                     一筋縄ではいかないため、対峙する敵の個性に合わせた臨機応変な戦術・カード回しが要求されます（詳細は「敵の種類」タブを参照）。
                 </div>
             </div>
@@ -329,9 +341,19 @@ function switchMenuTab(tabName) {
                     <span>⏱️ ショートカットキー一覧</span>
                 </div>
                 <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    戦闘のとき<strong>spaceキー</strong>を押すことでターンを終了することができる。<br>
-		    <strong>nキー</strong>を押すことで現在流れているBGMの曲を次の曲に飛ばすことができる。<br>
-		    <strong>mキー</strong>を押すことであらゆる音量を0にします。もう一度押すと、元の音量に戻ります。
+                    戦闘のとき<span style="color: red;">spaceキー</span>を押すことでターンを終了することができる。<br>
+		    <span style="color: red;">nキー</span>を押すことで現在流れているBGMの曲を次の曲に飛ばすことができる。<br>
+		    <span style="color: red;">mキー</span>を押すことであらゆる音量を0にします。もう一度押すと、元の音量に戻ります。
+                </div>
+            </div>
+
+            <div class="rule-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
+                <div class="enemy-header" onclick="const detail = this.nextElementSibling; const isOpen = detail.style.display === 'block'; detail.style.display = isOpen ? 'none' : 'block'; this.classList.toggle('active'); if(!isOpen) { setTimeout(() => detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50); }" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <span>🅿 スコアの上げ方</span>
+                </div>
+                <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
+                    スコアはゲームオーバーまたはゲームクリアのときにスコアが表示されます。<br>
+		    階層をできる限り登る、敵と戦う、デッキのカード枚数を増やす、所持金を増やす、体力を多く残したままクリアすることでスコアが上がります。
                 </div>
             </div>
 
@@ -340,7 +362,7 @@ function switchMenuTab(tabName) {
                     <span>⚡ 連鎖するコンボシステム</span>
                 </div>
                 <div class="rule-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    直前にプレイしたカードと<strong>「同じカテゴリ」</strong>であり、かつコストがちょうど<strong>「+1」</strong>されているカードを連続で出すと「コンボボーナス」が発動し、カードの追加効果や威力がわずかに上昇します！</p>
+                    直前にプレイしたカードと<span style="color: red;">「同じカテゴリ」</span>であり、かつ<span style="color: red;">コストがちょうど「+1」</span>されているカードを連続で出すと「コンボボーナス」が発動し、カードの追加効果や威力がわずかに上昇します！</p>
 		<p>攻撃系:与えるダメージを+2</p>
 		<p>防御系:ブロック+2</p>
 		<p>回復系:回復+2</p>
@@ -382,416 +404,7 @@ function switchMenuTab(tabName) {
         <h2>👹 登場する敵キャラクターの特徴</h2>
         <h3 style="color: #aaa; font-size: 12px; margin-bottom: 25px;">※ 敵の名前やアイコンをクリックすると、詳細な解説が開閉します。</h3>
         
-        <div class="enemy-accordion">
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Goblin 👺</span> <span style="color: gold;">125G</span>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    特別なパッシブスキルや耐性は持たないため、どのようなデッキでも均等にダメージが通る。
-                </div>
-            </div>
-
-<div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Knight 🛡️</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【状態異常無効】</strong>
-                        <span style="color: gold;">175G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    鉄壁の鎧を身にまとっており、毒、火傷、凍結、スタンなどの状態異常を一切受け付けない。攻撃系カードによる純粋な物理火力で正面突破する必要がある。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Slime 🟢</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【物理攻撃無効 / 状態異常ダメージ2倍】</strong>
-                        <span style="color: gold;">150G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    攻撃系のカードが効かない。代わりに状態異常に非常に弱く、毒や火傷を付与すると2倍のダメージを与える。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Fenrir 🐺</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【コスト偶数カード使用不可】</strong>
-                        <span style="color: gold;">200G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    コストが0,2,4...といったコストが偶数のカードは使うことが出来ない。コストが奇数の1,3,5...といったカードを使おう。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Zombie 🧟</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【自己再生】</strong>
-                        <span style="color: gold;">175G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    前のターンにプレイヤーが与えたダメージの33.3%を吸収し、自身の最大HPの5%を毎ターン無条件で補給・再生する。中途半端な火力ではジリ貧になるため、高火力で与え続けるのがよい。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Golem 🗿</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【反射ダメージ / 毒無効】</strong>
-                        <span style="color: gold;">225G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    物理攻撃を加えるたび、プレイヤーが毎回「3」の固定反射ダメージを受ける。また、毒は完全に効かない。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Spirit 👻</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【奇数物理無効 / 偶数状態異常無効】</strong>
-                        <span style="color: gold;">225G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    実体と幽体を1ターンごとに行き来する怨霊。<br>
-                    ・<strong>奇数ターン（1, 3, 5...）</strong>: 物理攻撃が完全に無効。状態異常が効く。<br>
-                    ・<strong>偶数ターン（2, 4, 6...）</strong>: 物理攻撃が通るが、すべての状態異常が無効。<br>
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Thief 🏴‍☠️</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【ゴールド強奪 / 毎ターン4%で逃走】</strong>
-                        <span style="color: gold;">125G+奪われたG</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    プレイヤーのブロックを貫通して本体HPにダメージを与えるたびに、懐から「50G」を容赦なくスり盗る。さらに、毎ターン終了時に8%の確率で戦闘から逃亡してしまう。逃げられると盗まれた金は返らない。逃げる前に瞬間火力で仕留めろ！
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Clown 🤡</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【防御無視/ランダム2回行動）】</strong>
-                        <span style="color: gold;">175G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    毎ターンランダムな行動を予測不能に2回連続で繰り出す。お互いのブロックを完全に貫通・無視して直撃する。守るより攻めるが吉。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Phoenix 🐦‍🔥</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【確率復活】</strong>
-                        <span style="color: gold;">225G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    HPを0に削りきっても確率でその場で復活を遂げ、最大HPの10%分の肉体を急速再生する。運が悪いと何度も蘇るため、粘り強く戦い続ける必要がある。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Beast 🦁</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【無傷時攻撃1.5倍】</strong>
-                        <span style="color: gold;">150G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    プレイヤーがこのターン中に一度も敵のHPを減らさなかった場合、次ターンの攻撃力が1.5倍に跳ね上がる。毎ターンわずかでもかすり傷を負わせ続けることが抑制のカギ。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Bull 🐂</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【毎ターン攻撃力1.1倍】</strong>
-                        <span style="color: gold;">150G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    ターンを経過するごとに「1.1倍」ずつ上昇させていく。長期戦になればなるほど、一撃が即死級のダメージへと成長していくため、速攻で片付けるラッシュ力が求められる。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Shadow 👥</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【5枚プレイ毎に攻撃力+5】</strong>
-                        <span style="color: gold;">150G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    プレイヤーの影に潜む存在。プレイヤーが戦闘中に通算でカードを「5枚」使用するたびに、その動きを模倣して自身の基本攻撃力を恒久的に「+5」上昇させる。低コストカードの乱発や無限ループを強烈にメタる特性。毎ターン4枚まで使うことを推奨する。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Robot 🤖</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【漏電付与】</strong>
-                        <span style="color: gold;">150G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    プレイヤーに漏電（🔋）状態を付与する。漏電中にターンを終了した際、使い切れずに【余ったエネルギーの数×2】の固定ダメージをくらう。エネルギー管理が超重要。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Witch 🧙‍♂️</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【カテゴリ封印 / 1/3で忘却】</strong>
-                        <span style="color: gold;">175G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    毎ターンランダムな特定のカードカテゴリ（攻撃、防御、状態異常、回復）を指定して使用禁止にしてくる。さらに、1/3の確率でプレイヤーに「忘却（❓）」を付与し、手札の名前と説明文を全て「？？？」に隠蔽する極悪なデバフを持つ。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Reaper 🩻</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【即死攻撃/カード追加】</strong>
-                        <span style="color: gold;">200G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    プレイヤーのHPが20%以下のとき即死させる。デッキに5枚"呪い"カードを追加する。戦闘が終わるとデッキから5枚"呪い"カードを削除する。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Ork 🐗</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【攻撃・防御2倍】</strong>
-                        <span style="color: gold;">225G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    敵のHPが半分以下のとき、攻撃力と防御力をそれぞれ2倍にする。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Bee 🐝</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【確率回避】</strong>
-                        <span style="color: gold;">175G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    体力は低いものの、プレイヤーの攻撃や状態異常のダメージが33%で外れてしまう。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Undoll 🪆</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【カード追加】</strong>
-                        <span style="color: gold;">175G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    デッキに15枚"呪い"カードを追加する。戦闘が終わるとデッキから15枚"呪い"カードを削除する。1/3の確率で未熟（🔰）を付与する。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Assasin 🥷</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【偶数ターンに攻撃】</strong>
-                        <span style="color: gold;">175G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    偶数ターンのときに攻撃を行う。奇数ターンは攻撃しない。攻撃力は他の敵と比べ比較的高い。
-                </div>
-            </div>
-
-<div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Greedy 🦹</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【カード略奪】</strong>
-                        <span style="color: gold;">175G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    毎ターン、10%の確率でデッキの中からランダムに1枚奪われる。Greedyを倒しても奪われたカードは戻ってこない。
-                </div>
-            </div>
-
-<div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Trait 👽</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【ランダム特徴】</strong>
-                        <span style="color: gold;">200G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    戦闘開始時に以下の特性の中からランダムに2つ選ばれる。物理無効化、状態異常無効化、毎ターン攻撃力増加、毎ターン回復、漏電付与、忘却を付与、未熟を付与。なお、物理無効化または状態異常無効化が選ばれたとき、特性をこの1つのみとする。 
-                </div>
-            </div>
-
-
-
-
-<div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Bastion 💠</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【防御貫通不可】</strong>
-                        <span style="color: gold;">175G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    防御値（ブロック）が0にならない限り、いかなる攻撃もダメージが通らない。毒や火傷など、通常はブロックを無視するダメージも例外なく防御で受け止められてしまう。まずブロックを削り切ることが攻略の鍵。
-                </div>
-            </div>
-
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Gunner 🔫</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【完全防御を撃ち抜く】</strong>
-                        <span style="color: gold;">200G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    プレイヤーの防御で攻撃を完全に防がれた時、ダメージを1.5倍にしてから防御を差し引いて攻撃する。防御を高く積みすぎると逆に大ダメージを受ける。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Bat 🦇</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【毎ターン過労付与＋手札破壊】</strong>
-                        <span style="color: gold;">200G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    毎ターン、プレイヤーに「過労」状態を付与し、さらに手札からランダムに2枚を捨て札に送る。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Sight 👁️‍🗨️</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【呪い付与・物理半減・凍結耐性】</strong>
-                        <span style="color: gold;">200G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    出現時にデッキへ「呪い」カードを5枚追加する。この呪いカードはSightを倒した後もデッキに残り続ける。毎ターン、プレイヤーに「過労」状態を付与する。凍結状態・絶対零度状態のどちらも無効化する。物理攻撃によるダメージを半分に軽減する。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Luna 🌕</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【フェーズ変化・呪い付与】</strong>
-                        <span style="color: gold;">200G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    出現時にデッキへ「呪い」カードを5枚追加する。スタン状態にならない。物理攻撃によるダメージを半分に軽減する。<br>
-                    体力が半分より多いときは、毎ターン自身の最大HPの5%回復する。<br>
-                    体力が半分以下になると攻撃力が1.33倍になる。さらに呪いカードを5枚追加し、毎ターン1/3の確率でプレイヤーに「忘却」を付与する。<br>
-                    倒すと、追加した呪いカードのうち5枚だけが削除される。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;">
-                    <span>Tempest 🌪️</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【カード使用時に手札をデッキへ巻き戻す】</strong>
-                        <span style="color: gold;">200G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    プレイヤーがカードを1枚使用するたびに、その使用したカード以外の残りの手札を全てデッキへ戻してシャッフルする。手札を溜めたコンボや連続使用の組み立てが崩されやすい。
-                </div>
-            </div>
-
-
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; border: 1px solid #e43f5a; border-radius: 4px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(228,63,90,0.15);">
-                    <span>Dragon 🐉 (BOSS)</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【回復系BOSS（状態回復 / 自己再生）】</strong>
-                        <span style="color: gold;">600G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.3); font-size: 20px; color: #eee; line-height: 1.5;">
-                    ボスの1体。ターン開始時に1/4の確率で、Dragonにかかっているすべての状態異常（毒や火傷など）を完全に消去する。さらに、毎ターン終了時にHPが「10」回復し、1/3の確率でさらに追加で「10」回復する。1/3で未熟を付与する。常にスタン状態を無効化する。
-                </div>
-            </div>
-            
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; border: 1px solid #e43f5a; border-radius: 4px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(228,63,90,0.15);">
-                    <span>Magica 🔮 (BOSS)</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【妨害系BOSS（漏電・未熟付与/カテゴリ封印）】</strong>
-                        <span style="color: gold;">600G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    ボスの1体。毎ターンランダムな特定のカードカテゴリ（攻撃、防御、状態異常、回復）を指定して使用禁止かつ漏電を付与する。1/3で未熟を付与する。
-                </div>
-            </div>
-
-            <div class="enemy-item" style="margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; border: 1px solid #e43f5a; border-radius: 4px;">
-                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(228,63,90,0.15);">
-                    <span>Boost 🪓 (BOSS)</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <strong style="color: #00adb5;">【攻撃系BOSS（攻撃力増加）】</strong>
-                        <span style="color: gold;">600G</span>
-                    </div>
-                </div>
-                <div class="enemy-detail" style="display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;">
-                    ボスの1体。攻撃力を1.1倍してくる。カードを1枚使うごとに敵の攻撃力を+1する。1/3で未熟を付与する。
-                </div>
-            </div>        </div>
+        ${renderEnemyManualHtml()}
 
         <br>
         <h2>👹 敵の行動パターン</h2>
@@ -820,8 +433,11 @@ function switchMenuTab(tabName) {
         <p>最初に手札が5枚配られます。手札のカードをクリックすることでカードが使用できます。カードに書いてあるコストはプレイヤーのステータス画面にあるエネルギーと同じです。エネルギーが残った状態で次のターンに行くと手札のカードが5枚から最大10枚まで増ることがあります。</p>
 	<br>
 	<br>
-	<h2>✅ ターンの終了など</h2>
-        <p>画面上部にターン終了ボタン、手札のON/OFFボタン、説明書ボタンがあります。ショートカットキーとしてスペースキーでターン終了することが可能です。手札のON/OFFを使用することで敵のステータス画面を見やすくしています。ターンを終了することで敵が攻撃してきます。</p>
+	<h2>✅ 戦闘画面について</h2>
+	<p>左側のステータス画面がプレイヤーで、現在の体力、ブロック値、状態異常、エネルギー、ポーションが確認できます。<p>
+	<p>右側が敵のステータス画面で、現在の体力、攻撃力、ブロック値、状態異常を確認できます。<p>
+	<p>画面下には、自分の手札が表示され、クリックすることでカードを使用します。<p>
+        <p>画面上部にターン終了ボタン、手札のON/OFFボタン、メニューボタン、階層、所持金、デッキ枚数、捨て札の枚数が表示されています。ショートカットキーとしてスペースキーでターン終了することが可能です。手札のON/OFFを使用することで敵のステータス画面を見やすくしています。ターンを終了することで敵が攻撃してきます。</p>
 	<br>
 	<br>
 	<h2>👹 敵の行動パターン</h2>
@@ -885,7 +501,7 @@ function switchMenuTab(tabName) {
     
     if (tabName === 'map') {
         html = `<h2>🗺️ マップ解説</h2>` +
-               `<h3>マップはランダムに3から4つの分岐が生成され、プレイヤーは進路を自分で選択して進む。</h3>` +
+               `<h3>マップはランダムに3から５つの分岐が生成され、プレイヤーは進路を自分で選択して進む。</h3>` +
                `<hr style='border:1px solid rgba(255,255,255,0.1); margin:10px 0;'>` +
                `<p><strong>⚔️ 戦闘 (Battle)</strong>:<br>` +
                `通常の敵、または階層に応じた強敵と戦います。勝利するとゴールドを獲得し、新しいカードをデッキに加えることができます。</p>` +
@@ -903,7 +519,9 @@ function switchMenuTab(tabName) {
 	       `・カードの削除　　:デッキからカードの削除ができます。1枚削除するのに25Gかかります。</p>`+
 	       `・鍛冶屋　　　　　:カードのアップグレードを7回までできます。1回アップグレードするのに100Gかかります。</p>`+
 	       `・体力回復　　　　:体力をさらに30%回復させます。</p>`+
-	       `・ゴールドを得る　:ゴールドが100G、125G、150Gのどれかが貰えます。</p>`;
+	       `・ゴールドを得る　:ゴールドが100G、125G、150Gのどれかが貰えます。</p>`+
+               `<p><strong>🧑‍💼 行商人 (Merchant)</strong>:<br>` +
+               `カードの取引を行います。5枚カードが提示され、そのカードを行商人に渡すと600Gが貰えるが、渡さないと50G取られます。<br>なお、階層は変わらなく、マップ分岐を再抽選するのに使うのも有効です。`;
     }
 
     if (tabName === 'credit') {
@@ -1035,4 +653,4 @@ function filterCardDatabase(value) {
 
     const emptyMsg = document.getElementById("cardDbEmptyMsg");
     if (emptyMsg) emptyMsg.style.display = (q && totalVisible === 0) ? "block" : "none";
-}
+}	

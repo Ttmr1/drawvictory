@@ -36,11 +36,13 @@ const enemyTypes = {
     greedy:   { name:"Greedy",    icon:"🦹", hpRate:0.75, atkRate:1.00, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     trait:    { name:"Trait",     icon:"👽", hpRate:0.80, atkRate:0.80, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     bastion:  { name:"Bastion",   icon:"💠", hpRate:0.85, atkRate:0.85, blockRate:1.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
-    gunner:   { name:"Gunner",    icon:"🔫", hpRate:0.90, atkRate:0.90, blockRate:0.90, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
+    gunner:   { name:"Gunner",    icon:"🔫", hpRate:0.90, atkRate:0.90, blockRate:0.90, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
     bat:     { name:"Bat",        icon:"🦇", hpRate:0.95, atkRate:0.85, blockRate:0.85, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
     sight:    { name:"Sight",     icon:"👁️‍🗨️", hpRate:0.75, atkRate:0.60, blockRate:1.00, immuneNormal:false, immuneStatus:false, statusDouble:false, neverFreeze:true, physicalResist:0.5, rewardGold: 200 },
     luna:     { name:"Luna",      icon:"🌕", hpRate:1.00, atkRate:0.75, blockRate:0.50, immuneNormal:false, immuneStatus:false, statusDouble:false, neverFreeze:true, physicalResist:0.5, neverStun:true, rewardGold: 200 },
-    tempest:  { name:"Tempest",   icon:"🌪️", hpRate:0.85, atkRate:0.90, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 200 },
+    tempest:  { name:"Tempest",   icon:"🌪️", hpRate:0.85, atkRate:0.90, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
+    puppeteer:{ name:"Puppeteer", icon:"🎭", hpRate:1.00, atkRate:0.90, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 175 },
+    salamander:{ name:"Salamander",icon:"🦎",hpRate:1.00, atkRate:0.90, blockRate:0.50, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 150 },
 
 
 //ボス
@@ -49,7 +51,128 @@ const enemyTypes = {
     boost:  { name:"Boost",   icon:"🪓", hpRate:1.00, atkRate:1.65, blockRate:0.75, immuneNormal:false, immuneStatus:false, statusDouble:false, rewardGold: 600 },
 
 };
-    
+
+// =========================================================================
+// 📖 敵の説明データ（ゲーム説明書「敵について」と戦闘中の敵説明欄の、唯一の情報源）
+// ここを編集すれば、説明書と戦闘中の表示の両方に自動的に反映される。
+// key: enemy.data.name と一致させる（バトル中の説明表示の参照キー）
+// displayName: 説明書に表示する名前（見出し）
+// =========================================================================
+const ENEMY_MANUAL_DATA = [
+    { key: "Goblin",   displayName: "Goblin",   icon: "👺",       tag: "",                                             gold: "125G",
+      desc: "特徴なし。" },
+    { key: "Knight",   displayName: "Knight",   icon: "🛡️",       tag: "【状態異常無効】",                              gold: "175G",
+      desc: "毒、火傷、凍結、スタンなどの状態異常を一切受け付けない。" },
+    { key: "Slime",    displayName: "Slime",    icon: "🟢",       tag: "【物理攻撃無効 / 状態異常ダメージ2倍】",         gold: "150G",
+      desc: "攻撃系のカードが効かない。毒や火傷を付与すると2倍のダメージを与える。" },
+    { key: "Fenrir",   displayName: "Fenrir",   icon: "🐺",       tag: "【コスト偶数カード使用不可】",                   gold: "200G",
+      desc: "コストが0,2,4...といったコストが偶数のカードは使うことが出来ない。コストが奇数の1,3,5...といったカードを使おう。" },
+    { key: "Zombie",   displayName: "Zombie",   icon: "🧟",       tag: "【自己再生】",                                   gold: "175G",
+      desc: "前のターンにプレイヤーが与えたダメージの33.3%を吸収し、自身の最大HPの5%を毎ターン回復する。" },
+    { key: "Golem",    displayName: "Golem",    icon: "🗿",       tag: "【反射ダメージ / 毒無効】",                      gold: "225G",
+      desc: "物理攻撃を加えるたび、プレイヤーが毎回「3」の固定反射ダメージを受ける。また、毒は完全に効かない。" },
+    { key: "Spirit",   displayName: "Spirit",   icon: "👻",       tag: "【奇数物理無効 / 偶数状態異常無効】",            gold: "225G",
+      desc: "・<strong>奇数ターン（1, 3, 5...）</strong>: 物理攻撃が完全に無効。状態異常が効く。<br>・<strong>偶数ターン（2, 4, 6...）</strong>: 物理攻撃が通るが、すべての状態異常が無効。<br>" },
+    { key: "Thief",    displayName: "Thief",    icon: "🏴‍☠️",      tag: "【ゴールド強奪 / 毎ターン4%で逃走】",           gold: "125G+奪われたG",
+      desc: "プレイヤーのHPにダメージを与えるたびに、懐から「50G」をスり盗る。さらに、毎ターン終了時に8%の確率で戦闘から逃亡する。" },
+    { key: "Clown",    displayName: "Clown",    icon: "🤡",       tag: "【防御無視/ランダム2回行動）】",                 gold: "175G",
+      desc: "毎ターンランダムな行動を2回連続で繰り出す。お互いのブロックを無視して直撃する。" },
+    { key: "Phoenix",  displayName: "Phoenix",  icon: "🐦‍🔥",      tag: "【確率復活】",                                   gold: "225G",
+      desc: "HPを0に削りきっても確率でその場で復活を遂げ、最大HPの10%分の再生する。" },
+    { key: "Beast",    displayName: "Beast",    icon: "🦁",       tag: "【無傷時攻撃1.5倍】",                            gold: "150G",
+      desc: "このターン中に一度も敵のHPを減らさなかった場合、次ターンの攻撃力が1.5倍に跳ね上がる。" },
+    { key: "Bull",     displayName: "Bull",     icon: "🐂",       tag: "【毎ターン攻撃力1.1倍】",                        gold: "150G",
+      desc: "ターンを経過するごとに「1.1倍」ずつ上昇させていく。" },
+    { key: "Shadow",   displayName: "Shadow",   icon: "👥",       tag: "【5枚プレイ毎に攻撃力+5】",                      gold: "150G",
+      desc: "毎ターン、カードを「5枚」使用するたびに、敵自身の攻撃力を恒久的に「+5」上昇させる。毎ターン4枚まで使うことを推奨する。" },
+    { key: "Robot",    displayName: "Robot",    icon: "🤖",       tag: "【漏電付与】",                                   gold: "150G",
+      desc: "プレイヤーに漏電（🔋）状態を付与する。敵を倒したときに漏電のダメージも受けるので注意。" },
+    { key: "Witch",    displayName: "Witch",    icon: "🧙‍♂️",      tag: "【カテゴリ封印 / 1/3で忘却】",                   gold: "175G",
+      desc: "毎ターンランダムな特定のカードカテゴリ（攻撃、防御、状態異常、回復）を指定して使用禁止にしてくる。さらに、1/3の確率でプレイヤーに「忘却（❓）」を付与する。" },
+    { key: "Reaper",   displayName: "Reaper",   icon: "🩻",       tag: "【即死攻撃/カード追加】",                        gold: "200G",
+      desc: "プレイヤーのHPが20%以下のとき即死させる。この戦闘中のみデッキに5枚\"呪い\"カードを追加する。" },
+    { key: "Ork",      displayName: "Ork",      icon: "🐗",       tag: "【攻撃・防御2倍】",                              gold: "225G",
+      desc: "敵のHPが半分以下のとき、攻撃力と防御力をそれぞれ2倍にする。" },
+    { key: "Bee",      displayName: "Bee",      icon: "🐝",       tag: "【確率回避】",                                   gold: "175G",
+      desc: "体力は低いものの、プレイヤーの攻撃や状態異常のダメージが33%で外れてしまう。" },
+    { key: "Undoll",   displayName: "Undoll",   icon: "🪆",       tag: "【カード追加】",                                 gold: "175G",
+      desc: "デッキに15枚\"呪い\"カードを追加する。戦闘が終わるとデッキから15枚\"呪い\"カードを削除する。1/3の確率で未熟（🔰）を付与する。" },
+    { key: "Assassin", displayName: "Assasin",  icon: "🥷",       tag: "【偶数ターンに攻撃】",                           gold: "175G",
+      desc: "偶数ターンのときに攻撃を行う。奇数ターンは攻撃しない。" },
+    { key: "Greedy",   displayName: "Greedy",   icon: "🦹",       tag: "【カード略奪】",                                 gold: "175G",
+      desc: "毎ターン、15%の確率でデッキの中からランダムに1枚奪われる。Greedyを倒しても奪われたカードは戻ってこない。" },
+    { key: "Trait",    displayName: "Trait",    icon: "👽",       tag: "【ランダム特徴】",                               gold: "200G",
+      desc: "以下の特性の中からランダムに2つ選ばれる。物理無効化、状態異常無効化、毎ターン攻撃力増加、毎ターン回復、漏電付与、忘却を付与、未熟を付与。なお、物理無効化または状態異常無効化が選ばれたとき、特性をその1つのみとする。" },
+    { key: "Bastion",  displayName: "Bastion",  icon: "💠",       tag: "【防御貫通不可】",                               gold: "175G",
+      desc: "ブロックが0にならない限り、物理攻撃、毒、火傷もダメージが通らない。ブロックを無視するダメージも例外なく防御で受け止められてしまう。" },
+    { key: "Gunner",   displayName: "Gunner",   icon: "🔫",       tag: "【完全防御を撃ち抜く】",                         gold: "175G",
+      desc: "プレイヤーの防御で攻撃を完全に防がれた時、ダメージを1.5倍にしてから防御を差し引いて攻撃する。防御を高く積みすぎると逆に大ダメージを受ける。" },
+    { key: "Bat",      displayName: "Bat",      icon: "🦇",       tag: "【毎ターン過労付与＋手札破壊】",                 gold: "200G",
+      desc: "毎ターン、プレイヤーに「過労」状態を付与し、さらに手札からランダムに2枚を捨て札に送る。" },
+    { key: "Sight",    displayName: "Sight",    icon: "👁️‍🗨️",      tag: "【呪い付与・物理半減・凍結耐性】",               gold: "200G",
+      desc: "「呪い」カードを5枚追加する。プレイヤーに「過労」状態を付与する。物理攻撃によるダメージを半分に軽減する。" },
+    { key: "Luna",     displayName: "Luna",     icon: "🌕",       tag: "【フェーズ変化・呪い付与】",                     gold: "200G",
+      desc: "「呪い」カードを5枚追加する。スタン状態にならない。物理攻撃によるダメージを半分に軽減する。<br>体力が半分より多いときは、毎ターン自身の最大HPの5%回復する。<br>体力が半分以下になると攻撃力が1.33倍になる。呪いカードを5枚追加し、1/3の確率でプレイヤーに「忘却」を付与する。<br>倒すと、追加した呪いカードのうち5枚だけが削除される。" },
+    { key: "Tempest",  displayName: "Tempest",  icon: "🌪️",       tag: "【カード使用時に手札をデッキへ巻き戻す】",       gold: "175G",
+      desc: "カードを1枚使用するたびに、その使用したカード以外の残りの手札を全てデッキへ戻してシャッフルする。" },
+    { key: "Puppeteer", displayName: "Puppeteer", icon: "🎭",      tag: "【手札のカードを操る】",                         gold: "175G",
+      desc: "戦闘開始時、手札の中からランダムに1枚を「操られ」状態にする。操られたカードを使用すると、通常の効果に加えてPuppeteer自身が最大HPの15%回復してしまう。" },
+    { key: "Salamander", displayName: "Salamander", icon: "🦎",    tag: "【火傷を力に変える】",                           gold: "150G",
+      desc: "火傷によるダメージを受けるたびに、攻撃力が1.25倍になる。火傷を主体としたデッキには強力なカウンターとなるため注意。" },
+    { key: "Dragon",   displayName: "Dragon",   icon: "🐉",       tag: "【回復系BOSS（状態回復 / 自己再生）】",          gold: "600G", isBoss: true,
+      desc: "ボスの1体。常にスタン状態を無効化する。1/3で未熟を付与する。1/4の確率で、Dragonにかかっているすべての状態異常を完全に消去する。さらに、ターン終了時にHPが「10」回復し、1/3の確率でさらに追加で「10」回復する。" },
+    { key: "Magica",   displayName: "Magica",   icon: "🔮",       tag: "【妨害系BOSS（漏電・未熟付与/カテゴリ封印）】",  gold: "600G", isBoss: true,
+      desc: "ボスの1体。常にスタン状態を無効化する。1/3で未熟を付与する。毎ターンランダムな特定のカードカテゴリ（攻撃、防御、状態異常、回復）を使用禁止かつ漏電を付与する。" },
+    { key: "Boost",    displayName: "Boost",    icon: "🪓",       tag: "【攻撃系BOSS（攻撃力増加）】",                   gold: "600G", isBoss: true,
+      desc: "ボスの1体。常にスタン状態を無効化する。1/3で未熟を付与する。攻撃力を1.1倍してくる。カードを1枚使うごとに敵の攻撃力を+1する。" }
+];
+
+// 敵データ(enemy.data)から説明文を取得する（見つからない場合は空文字を返す）
+// ※ ENEMY_MANUAL_DATAが唯一の情報源。説明書と戦闘中の表示は両方ここを参照する。
+function getEnemyDescription(enemyData) {
+    if (!enemyData || !enemyData.name) return "";
+    const entry = ENEMY_MANUAL_DATA.find(e => e.key === enemyData.name);
+    return entry ? entry.desc : "";
+}
+
+// 📖 説明書「敵について」タブのアコーディオンHTMLを、ENEMY_MANUAL_DATAから自動生成する
+// ここを直接編集する必要はない。敵の説明を変えたい時はENEMY_MANUAL_DATAを編集すればよい。
+function renderEnemyManualHtml() {
+    let html = `<div class="enemy-accordion">`;
+
+    ENEMY_MANUAL_DATA.forEach(e => {
+        const isBoss = !!e.isBoss;
+        const itemStyle = isBoss
+            ? `margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; border: 1px solid #e43f5a; border-radius: 4px;`
+            : `margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;`;
+        const headerStyle = isBoss
+            ? `cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(228,63,90,0.15);`
+            : `cursor: pointer; padding: 5px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); border-radius: 4px;`;
+        const detailStyle = isBoss
+            ? `display: none; padding: 10px; background: rgba(0,0,0,0.3); font-size: 20px; color: #eee; line-height: 1.5;`
+            : `display: none; padding: 10px; background: rgba(0,0,0,0.2); font-size: 20px; color: #ccc; line-height: 1.5;`;
+        const nameLabel = `${e.displayName} ${e.icon}${isBoss ? " (BOSS)" : ""}`;
+        const tagHtml = e.tag ? `<strong style="color: #00adb5;">${e.tag}</strong>` : "";
+
+        html += `
+            <div class="enemy-item" style="${itemStyle}">
+                <div class="enemy-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'; this.classList.toggle('active');" style="${headerStyle}">
+                    <span>${nameLabel}</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        ${tagHtml}
+                        <span style="color: gold;">${e.gold}</span>
+                    </div>
+                </div>
+                <div class="enemy-detail" style="${detailStyle}">
+                    ${e.desc}
+                </div>
+            </div>`;
+    });
+
+    html += `</div>`;
+    return html;
+}
+
 
 // =========================================================================
 // 🧪 敵の生成とステータス初期化
@@ -60,7 +183,7 @@ const enemyTypes = {
 function initEnemyStatus() {
 
     //const pool = ["robot"]
-    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait","bastion","gunner","bat","sight","luna","tempest"];
+    const pool = ["goblin","knight","slime", "fenrir", "zombie", "golem", "spirit", "thief", "clown","phoenix","beast","bull","shadow","robot","witch","reaper", "ork", "bee","undoll","assassin","greedy","trait","bastion","gunner","bat","sight","luna","tempest","puppeteer","salamander"];
 
 // ─── 敵の種類の選定 ───
 
@@ -205,6 +328,16 @@ function applyLunaTurnEffect() {
     }
 
     if (typeof updateUI === 'function') updateUI();
+}
+
+// 🎭 Puppeteer：戦闘開始時、手札からランダムに1枚を「操られ」状態にする
+function applyPuppeteerBattleStart() {
+    if (!(window.inBattle && enemy.data && enemy.data.name === "Puppeteer")) return;
+    if (!window.hand || hand.length === 0) return;
+
+    const idx = Math.floor(Math.random() * hand.length);
+    hand[idx].puppeted = true;
+    customAlert("🎭 パペッティアが手札の1枚を操っている…！使うと敵が回復してしまう。");
 }
 
 // =========================================================================
